@@ -189,7 +189,7 @@ class _GymsScreenState extends State<GymsScreen> {
       if (isSaved) {
         await FirestoreService.instance.removeSavedGym(uid, gym.id);
       } else {
-        await FirestoreService.instance.saveGym(uid, gym.id);
+        await FirestoreService.instance.saveGym(uid, gym);
       }
     } catch (error) {
       if (!mounted) return;
@@ -206,15 +206,68 @@ class _GymsScreenState extends State<GymsScreen> {
     }
   }
 
+  places.PlaceData _placeFromSavedData(Map<String, dynamic> data) {
+    final location = data['latitude'] is num && data['longitude'] is num
+        ? places.PlaceCoordinates(
+            latitude: (data['latitude'] as num).toDouble(),
+            longitude: (data['longitude'] as num).toDouble(),
+          )
+        : null;
+
+    Map<String, Object?>? toObjectMap(dynamic value) {
+      if (value is! Map) return null;
+      return Map<String, Object?>.from(value);
+    }
+
+    return places.PlaceData(
+      id: data['placeId'] as String,
+      displayName: data['name'] is String
+          ? places.LocalizedText(text: data['name'] as String)
+          : null,
+      formattedAddress: data['address'] as String?,
+      location: location,
+      rating: (data['rating'] as num?)?.toDouble(),
+      userRatingCount: data['ratingCount'] as int?,
+      nationalPhoneNumber: data['phone'] as String?,
+      websiteUri: data['websiteUri'] as String?,
+      googleMapsUri: data['googleMapsUri'] as String?,
+      currentOpeningHours: toObjectMap(data['currentOpeningHours']),
+      regularOpeningHours: toObjectMap(data['regularOpeningHours']),
+    );
+  }
+
   Future<List<places.PlaceData>> _loadSavedGyms() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const [];
+
     final results = <places.PlaceData>[];
-    for (final placeId in _savedGymIds) {
+    final savedData = await FirestoreService.instance.getSavedGyms(uid);
+    final savedIds = <String>{};
+
+    for (final data in savedData) {
+      final placeId = data['placeId'];
+      if (placeId is! String || placeId.isEmpty) continue;
       try {
-        results.add(await GymService.instance.getGymDetails(placeId));
+        results.add(_placeFromSavedData(data));
+        savedIds.add(placeId);
       } catch (_) {
-        // Ignore places that are temporarily unavailable or no longer exist.
+        // Ignore malformed saved records.
       }
     }
+
+    // Migrate old saved IDs that were stored before full gym details were persisted.
+    for (final placeId in _savedGymIds) {
+      if (savedIds.contains(placeId)) continue;
+      try {
+        final gym = await GymService.instance.getGymDetails(placeId);
+        results.add(gym);
+        savedIds.add(placeId);
+        await FirestoreService.instance.saveGym(uid, gym);
+      } catch (_) {
+        // Ignore legacy records that cannot be resolved.
+      }
+    }
+
     return results;
   }
 
@@ -497,6 +550,7 @@ class _GymsScreenState extends State<GymsScreen> {
                   itemCount: _gyms.length,
                   itemBuilder: (context, index) {
                     final gym = _gyms[index];
+                    final isSaved = _savedGymIds.contains(gym.id);
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const CircleAvatar(
@@ -513,9 +567,7 @@ class _GymsScreenState extends State<GymsScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       trailing: Icon(
-                        _savedGymIds.contains(gym.id)
-                            ? Icons.bookmark
-                            : Icons.chevron_right,
+                        isSaved ? Icons.bookmark : Icons.bookmark_border,
                       ),
                       onTap: () {
                         final location = gym.location;
