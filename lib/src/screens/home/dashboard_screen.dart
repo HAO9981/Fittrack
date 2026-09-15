@@ -9,6 +9,7 @@ import '../../services/nutrition_service.dart';
 import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/dashboard_stat_card.dart';
+import '../progress/progress_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -147,6 +148,14 @@ class _DashboardContent extends StatelessWidget {
             title: Text('$weeklyMinutes active minutes'),
             subtitle: const Text('Keep building a consistent routine.'),
           ),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ProgressScreen()),
+          ),
+          icon: const Icon(Icons.analytics_outlined),
+          label: const Text('View detailed progress'),
         ),
         const SizedBox(height: 24),
         _SectionTitle(title: 'Recent workouts'),
