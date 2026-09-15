@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../models/meal.dart';
+import '../../models/user_profile.dart';
 import '../../models/workout.dart';
 import '../../services/auth_service.dart';
+import '../../services/firestore_service.dart';
 import '../../services/nutrition_service.dart';
 import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
@@ -16,6 +18,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  late final Stream<UserProfile?> _profileStream;
   late final Stream<List<Workout>> _todayWorkoutsStream;
   late final Stream<List<Workout>> _recentWorkoutsStream;
   late final Stream<List<Meal>> _todayMealsStream;
@@ -24,8 +27,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // Create each Firestore stream once for this screen instead of creating
-    // new query/listener objects every time the dashboard rebuilds.
+    final user = FirebaseAuthService.instance.currentUser;
+
+    // Read the display name from the Firestore profile so newly registered
+    // users do not depend on Firebase Auth's profile update timing.
+    _profileStream = user == null
+        ? Stream<UserProfile?>.value(null)
+        : FirestoreService.instance.userProfileStream(user.uid);
     _todayWorkoutsStream = WorkoutService.instance.getTodayWorkouts();
     _recentWorkoutsStream = WorkoutService.instance.getRecentWorkouts();
     _todayMealsStream = NutritionService.instance.getTodayMeals();
@@ -38,42 +46,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('FitTrack')),
-      body: StreamBuilder<List<Workout>>(
-        stream: _todayWorkoutsStream,
-        builder: (context, todayWorkoutSnapshot) => StreamBuilder<List<Workout>>(
-          stream: _recentWorkoutsStream,
-          builder: (context, recentWorkoutSnapshot) => StreamBuilder<List<Meal>>(
-            stream: _todayMealsStream,
-            builder: (context, todayMealSnapshot) => StreamBuilder<List<Meal>>(
-              stream: _recentMealsStream,
-              builder: (context, recentMealSnapshot) {
-                final snapshots = [
-                  todayWorkoutSnapshot,
-                  recentWorkoutSnapshot,
-                  todayMealSnapshot,
-                  recentMealSnapshot,
-                ];
+      body: StreamBuilder<UserProfile?>(
+        stream: _profileStream,
+        builder: (context, profileSnapshot) => StreamBuilder<List<Workout>>(
+          stream: _todayWorkoutsStream,
+          builder: (context, todayWorkoutSnapshot) => StreamBuilder<List<Workout>>(
+            stream: _recentWorkoutsStream,
+            builder: (context, recentWorkoutSnapshot) => StreamBuilder<List<Meal>>(
+              stream: _todayMealsStream,
+              builder: (context, todayMealSnapshot) => StreamBuilder<List<Meal>>(
+                stream: _recentMealsStream,
+                builder: (context, recentMealSnapshot) {
+                  final snapshots = [
+                    profileSnapshot,
+                    todayWorkoutSnapshot,
+                    recentWorkoutSnapshot,
+                    todayMealSnapshot,
+                    recentMealSnapshot,
+                  ];
 
-                if (snapshots.any((snapshot) => snapshot.connectionState == ConnectionState.waiting)) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                  if (snapshots.any((snapshot) => snapshot.connectionState == ConnectionState.waiting)) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                if (snapshots.any((snapshot) => snapshot.hasError)) {
-                  return const AppEmptyState(
-                    icon: Icons.cloud_off_outlined,
-                    title: 'Dashboard unavailable',
-                    message: 'Your latest activity could not be loaded.',
+                  if (snapshots.any((snapshot) => snapshot.hasError)) {
+                    return const AppEmptyState(
+                      icon: Icons.cloud_off_outlined,
+                      title: 'Dashboard unavailable',
+                      message: 'Your latest activity could not be loaded.',
+                    );
+                  }
+
+                  return _DashboardContent(
+                    userName: profileSnapshot.data?.displayName ?? user?.displayName ?? 'User',
+                    todayWorkouts: todayWorkoutSnapshot.data ?? [],
+                    recentWorkouts: recentWorkoutSnapshot.data ?? [],
+                    todayMeals: todayMealSnapshot.data ?? [],
+                    recentMeals: recentMealSnapshot.data ?? [],
                   );
-                }
-
-                return _DashboardContent(
-                  userName: user?.displayName ?? 'User',
-                  todayWorkouts: todayWorkoutSnapshot.data ?? [],
-                  recentWorkouts: recentWorkoutSnapshot.data ?? [],
-                  todayMeals: todayMealSnapshot.data ?? [],
-                  recentMeals: recentMealSnapshot.data ?? [],
-                );
-              },
+                },
+              ),
             ),
           ),
         ),
