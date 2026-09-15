@@ -5,7 +5,7 @@ class AiService {
   static final AiService instance = AiService._();
 
   final GenerativeModel _model = FirebaseAI.googleAI().generativeModel(
-    model: 'gemini-3.8-flash',
+    model: 'gemini-3.5-flash-lite',
     systemInstruction: Content.text(
       'You are FitTrack AI, a helpful fitness assistant. Give practical, concise fitness and nutrition guidance. '
       'Use the user context when provided. Do not diagnose medical conditions or replace professional medical advice. '
