@@ -11,6 +11,19 @@ class GymService {
   bool get isConfigured =>
       const String.fromEnvironment('GOOGLE_MAPS_API_KEY').trim().isNotEmpty;
 
+  static const Set<PlaceField> _gymFields = {
+    PlaceField.displayName,
+    PlaceField.formattedAddress,
+    PlaceField.location,
+    PlaceField.rating,
+    PlaceField.userRatingCount,
+    PlaceField.googleMapsUri,
+    PlaceField.nationalPhoneNumber,
+    PlaceField.websiteUri,
+    PlaceField.currentOpeningHours,
+    PlaceField.regularOpeningHours,
+  };
+
   Future<List<PlaceData>> searchNearbyGyms({
     required double latitude,
     required double longitude,
@@ -25,18 +38,20 @@ class GymService {
           radiusMeters: radiusMeters,
         ),
         includedPrimaryTypes: const ['gym'],
-        fields: const {
-          PlaceField.displayName,
-          PlaceField.formattedAddress,
-          PlaceField.location,
-          PlaceField.rating,
-          PlaceField.userRatingCount,
-          PlaceField.googleMapsUri,
-        },
+        fields: _gymFields,
         maxResultCount: 15,
         languageCode: 'en',
         regionCode: 'MY',
       ),
+    );
+  }
+
+  Future<PlaceData> getGymDetails(String placeId) {
+    return _client.fetchPlaceById(
+      placeId,
+      fields: _gymFields,
+      languageCode: 'en',
+      regionCode: 'MY',
     );
   }
 
