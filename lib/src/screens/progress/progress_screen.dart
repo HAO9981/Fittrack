@@ -49,15 +49,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
             builder: (context, mealSnapshot) => StreamBuilder<UserProfile?>(
               stream: _profileStream,
               builder: (context, profileSnapshot) {
-                if ([workoutSnapshot, mealSnapshot, profileSnapshot].any(
-                  (snapshot) => snapshot.connectionState == ConnectionState.waiting,
-                )) {
+                final snapshots = [workoutSnapshot, mealSnapshot, profileSnapshot];
+                if (snapshots.any((snapshot) => snapshot.connectionState == ConnectionState.waiting)) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
-                if ([workoutSnapshot, mealSnapshot, profileSnapshot].any(
-                  (snapshot) => snapshot.hasError,
-                )) {
+                if (snapshots.any((snapshot) => snapshot.hasError)) {
                   return const AppEmptyState(
                     icon: Icons.cloud_off_outlined,
                     title: 'Progress unavailable',
@@ -78,11 +74,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 }
 
 class _ProgressContent extends StatelessWidget {
-  const _ProgressContent({
-    required this.workouts,
-    required this.meals,
-    required this.profile,
-  });
+  const _ProgressContent({required this.workouts, required this.meals, required this.profile});
 
   final List<Workout> workouts;
   final List<Meal> meals;
@@ -108,6 +100,7 @@ class _ProgressContent extends StatelessWidget {
     const workoutGoal = 3;
     final double workoutProgress = (weeklyWorkouts.length / workoutGoal).clamp(0.0, 1.0);
     final bmi = _calculateBmi(profile?.weightKg, profile?.heightCm);
+    final weightProgress = _calculateWeightProgress(profile?.weightKg, profile?.targetWeightKg, profile?.fitnessGoal);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -116,93 +109,83 @@ class _ProgressContent extends StatelessWidget {
         const SizedBox(height: 4),
         Text('A summary of your recent activity.', style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(child: _MetricCard(icon: Icons.fitness_center, value: '${weeklyWorkouts.length}', label: 'Workouts')),
-            const SizedBox(width: 12),
-            Expanded(child: _MetricCard(icon: Icons.timer_outlined, value: '$weeklyMinutes min', label: 'Active time')),
-          ],
-        ),
+        Row(children: [
+          Expanded(child: _MetricCard(icon: Icons.fitness_center, value: '${weeklyWorkouts.length}', label: 'Workouts')),
+          const SizedBox(width: 12),
+          Expanded(child: _MetricCard(icon: Icons.timer_outlined, value: '$weeklyMinutes min', label: 'Active time')),
+        ]),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _MetricCard(icon: Icons.local_fire_department_outlined, value: '$weeklyCalories kcal', label: '7-day calories')),
-            const SizedBox(width: 12),
-            Expanded(child: _MetricCard(icon: Icons.monitor_weight_outlined, value: profile?.weightKg == null ? '--' : '${_formatNumber(profile!.weightKg!)} kg', label: 'Current weight')),
-          ],
-        ),
+        Row(children: [
+          Expanded(child: _MetricCard(icon: Icons.local_fire_department_outlined, value: '$weeklyCalories kcal', label: '7-day calories')),
+          const SizedBox(width: 12),
+          Expanded(child: _MetricCard(icon: Icons.monitor_weight_outlined, value: profile?.weightKg == null ? '--' : '${_formatNumber(profile!.weightKg!)} kg', label: 'Current weight')),
+        ]),
         const SizedBox(height: 24),
         Text('Weekly workout goal', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
-        Card(
-          child: Padding(
+        Card(child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text('${weeklyWorkouts.length} of $workoutGoal workouts'),
+              Text('${(workoutProgress * 100).round()}%'),
+            ]),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(value: workoutProgress, minHeight: 8, borderRadius: BorderRadius.circular(8)),
+            const SizedBox(height: 8),
+            const Text('Aim for at least 3 workouts each week.'),
+          ]),
+        )),
+        if (weightProgress != null) ...[
+          const SizedBox(height: 24),
+          Text('Weight goal progress', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Card(child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('${weeklyWorkouts.length} of $workoutGoal workouts'),
-                    Text('${(workoutProgress * 100).round()}%'),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                LinearProgressIndicator(value: workoutProgress, minHeight: 8, borderRadius: BorderRadius.circular(8)),
-                const SizedBox(height: 8),
-                const Text('Aim for at least 3 workouts each week.'),
-              ],
-            ),
-          ),
-        ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('${_formatNumber(weightProgress.current)} kg'),
+                Text('Target ${_formatNumber(weightProgress.target)} kg'),
+              ]),
+              const SizedBox(height: 12),
+              LinearProgressIndicator(value: weightProgress.progress, minHeight: 8, borderRadius: BorderRadius.circular(8)),
+              const SizedBox(height: 8),
+              Text(weightProgress.progress >= 1
+                  ? 'Target weight reached.'
+                  : '${(weightProgress.progress * 100).round()}% of the way to your target.'),
+            ]),
+          )),
+        ],
         const SizedBox(height: 24),
         Text('Nutrition overview', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.restaurant_outlined),
-            title: Text('$averageDailyCalories kcal/day'),
-            subtitle: Text('${weeklyMeals.length} meals recorded in the last 7 days'),
-          ),
-        ),
+        Card(child: ListTile(
+          leading: const Icon(Icons.restaurant_outlined),
+          title: Text('$averageDailyCalories kcal/day'),
+          subtitle: Text('${weeklyMeals.length} meals recorded in the last 7 days'),
+        )),
         const SizedBox(height: 24),
         Text('Body metrics', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
-        Card(
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.monitor_weight_outlined),
-                title: const Text('Current weight'),
-                trailing: Text(profile?.weightKg == null ? 'Not set' : '${_formatNumber(profile!.weightKg!)} kg'),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.height_outlined),
-                title: const Text('Height'),
-                trailing: Text(profile?.heightCm == null ? 'Not set' : '${_formatNumber(profile!.heightCm!)} cm'),
-              ),
-              if (bmi != null) ...[
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.analytics_outlined),
-                  title: const Text('BMI'),
-                  trailing: Text(bmi.toStringAsFixed(1)),
-                ),
-              ],
-            ],
-          ),
-        ),
+        Card(child: Column(children: [
+          ListTile(leading: const Icon(Icons.monitor_weight_outlined), title: const Text('Current weight'), trailing: Text(profile?.weightKg == null ? 'Not set' : '${_formatNumber(profile!.weightKg!)} kg')),
+          const Divider(height: 1),
+          ListTile(leading: const Icon(Icons.flag_outlined), title: const Text('Target weight'), trailing: Text(profile?.targetWeightKg == null ? 'Not set' : '${_formatNumber(profile!.targetWeightKg!)} kg')),
+          const Divider(height: 1),
+          ListTile(leading: const Icon(Icons.height_outlined), title: const Text('Height'), trailing: Text(profile?.heightCm == null ? 'Not set' : '${_formatNumber(profile!.heightCm!)} cm')),
+          if (bmi != null) ...[
+            const Divider(height: 1),
+            ListTile(leading: const Icon(Icons.analytics_outlined), title: const Text('BMI'), trailing: Text(bmi.toStringAsFixed(1))),
+          ],
+        ])),
         const SizedBox(height: 24),
         Text('Fitness goal', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.flag_outlined),
-            title: Text(profile?.fitnessGoal ?? 'Not set'),
-            subtitle: const Text('Update your goal in Profile to keep your progress relevant.'),
-          ),
-        ),
+        Card(child: ListTile(
+          leading: const Icon(Icons.flag_outlined),
+          title: Text(profile?.fitnessGoal ?? 'Not set'),
+          subtitle: const Text('Update your goal in Profile to keep your progress relevant.'),
+        )),
         const SizedBox(height: 24),
       ],
     );
@@ -214,30 +197,41 @@ class _ProgressContent extends StatelessWidget {
     return weightKg / (heightM * heightM);
   }
 
+  static _WeightProgress? _calculateWeightProgress(double? current, double? target, String? goal) {
+    if (current == null || target == null || current <= 0 || target <= 0 || current == target) return null;
+    final isWeightLoss = goal == 'Lose weight' || target < current;
+    final totalChange = (target - current).abs();
+    final progress = isWeightLoss
+        ? ((current - target) / totalChange).clamp(0.0, 1.0)
+        : ((target - current) / totalChange).clamp(0.0, 1.0);
+    return _WeightProgress(current: current, target: target, progress: progress);
+  }
+
   static String _formatNumber(double value) => value % 1 == 0 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
+}
+
+class _WeightProgress {
+  const _WeightProgress({required this.current, required this.target, required this.progress});
+  final double current;
+  final double target;
+  final double progress;
 }
 
 class _MetricCard extends StatelessWidget {
   const _MetricCard({required this.icon, required this.value, required this.label});
-
   final IconData icon;
   final String value;
   final String label;
 
   @override
-  Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 12),
-              Text(value, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 4),
-              Text(label, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-          ),
-        ),
-      );
+  Widget build(BuildContext context) => Card(child: Padding(
+    padding: const EdgeInsets.all(16),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Icon(icon, color: Theme.of(context).colorScheme.primary),
+      const SizedBox(height: 12),
+      Text(value, style: Theme.of(context).textTheme.titleLarge),
+      const SizedBox(height: 4),
+      Text(label, style: Theme.of(context).textTheme.bodyMedium),
+    ]),
+  ));
 }
