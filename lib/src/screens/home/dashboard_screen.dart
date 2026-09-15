@@ -9,6 +9,7 @@ import '../../services/nutrition_service.dart';
 import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/dashboard_stat_card.dart';
+import '../ai/ai_assistant_screen.dart';
 import '../progress/progress_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -156,6 +157,14 @@ class _DashboardContent extends StatelessWidget {
           ),
           icon: const Icon(Icons.analytics_outlined),
           label: const Text('View detailed progress'),
+        ),
+        const SizedBox(height: 10),
+        FilledButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
+          ),
+          icon: const Icon(Icons.auto_awesome),
+          label: const Text('Ask FitTrack AI'),
         ),
         const SizedBox(height: 24),
         _SectionTitle(title: 'Recent workouts'),
