@@ -42,6 +42,35 @@ class NutritionService {
     }
   }
 
+  /// Returns only the latest meals needed by the dashboard.
+  Stream<List<Meal>> getRecentMeals({int limit = 3}) {
+    try {
+      return _meals
+          .orderBy('date', descending: true)
+          .limit(limit)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map(Meal.fromFirestore).toList());
+    } on StateError catch (error) {
+      return Stream<List<Meal>>.error(error);
+    }
+  }
+
+  Stream<List<Meal>> getTodayMeals() {
+    try {
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      final endOfDay = startOfDay.add(const Duration(days: 1));
+      return _meals
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('date', isLessThan: Timestamp.fromDate(endOfDay))
+          .orderBy('date', descending: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map(Meal.fromFirestore).toList());
+    } on StateError catch (error) {
+      return Stream<List<Meal>>.error(error);
+    }
+  }
+
   Future<void> addMeal(Meal meal) async {
     final document = _meals.doc();
     await document.set({
