@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/meal.dart';
@@ -98,11 +99,16 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       );
       if (!mounted) return;
       setState(() => _messages.add(_ChatMessage(text: response, isUser: false)));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      debugPrint('FitTrack AI error: $error');
+      debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
+      final errorText = kDebugMode
+          ? 'AI error:\n$error'
+          : 'I could not connect to the AI right now. Please try again.';
       setState(() => _messages.add(
             _ChatMessage(
-              text: 'I could not connect to the AI right now. Please check your Firebase AI setup and try again.',
+              text: errorText,
               isUser: false,
             ),
           ));
