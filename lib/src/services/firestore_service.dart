@@ -16,6 +16,19 @@ class FirestoreService {
   CollectionReference<Map<String, dynamic>> _savedGyms(String uid) =>
       _users.doc(uid).collection('savedGyms');
 
+  String _savedGymDocumentId(places.PlaceData gym) {
+    final placeId = gym.id.trim();
+    if (placeId.isNotEmpty) return placeId;
+
+    final name = gym.displayName?.text?.trim() ?? 'gym';
+    final latitude = gym.location?.latitude.toStringAsFixed(6) ?? 'unknown';
+    final longitude = gym.location?.longitude.toStringAsFixed(6) ?? 'unknown';
+    final safe = '$name-$latitude-$longitude'
+        .replaceAll(RegExp(r'[/\\#?]'), '_')
+        .replaceAll(RegExp(r'\s+'), '_');
+    return 'fallback_$safe';
+  }
+
   Future<void> createUserProfile(AppUser user) async {
     final profile = UserProfile.initial(user);
     await _users.doc(user.uid).set(profile.toMap(), SetOptions(merge: true));
@@ -39,7 +52,11 @@ class FirestoreService {
 
   Future<Set<String>> getSavedGymIds(String uid) async {
     final snapshot = await _savedGyms(uid).get();
-    final ids = snapshot.docs.map((doc) => doc.id).toSet();
+    final ids = <String>{};
+    for (final doc in snapshot.docs) {
+      final placeId = doc.data()['placeId'];
+      ids.add(placeId is String && placeId.isNotEmpty ? placeId : doc.id);
+    }
 
     // Keep compatibility with the original savedGymIds field.
     final userDocument = await _users.doc(uid).get();
@@ -57,8 +74,11 @@ class FirestoreService {
   }
 
   Future<void> saveGym(String uid, places.PlaceData gym) async {
-    await _savedGyms(uid).doc(gym.id).set({
-      'placeId': gym.id,
+    final documentId = _savedGymDocumentId(gym);
+    final placeId = gym.id.trim();
+
+    await _savedGyms(uid).doc(documentId).set({
+      'placeId': placeId,
       'name': gym.displayName?.text,
       'address': gym.formattedAddress,
       'rating': gym.rating,
@@ -73,17 +93,31 @@ class FirestoreService {
       'savedAt': FieldValue.serverTimestamp(),
     });
 
-    // Keep the old field in sync so existing users do not lose their saved IDs.
-    await _users.doc(uid).set({
-      'savedGymIds': FieldValue.arrayUnion([gym.id]),
-    }, SetOptions(merge: true));
+    // Keep the old field in sync for users that already have this field.
+    if (placeId.isNotEmpty) {
+      await _users.doc(uid).set({
+        'savedGymIds': FieldValue.arrayUnion([placeId]),
+      }, SetOptions(merge: true));
+    }
   }
 
   Future<void> removeSavedGym(String uid, String placeId) async {
-    await _savedGyms(uid).doc(placeId).delete();
-    await _users.doc(uid).set({
-      'savedGymIds': FieldValue.arrayRemove([placeId]),
-    }, SetOptions(merge: true));
+    if (placeId.trim().isNotEmpty) {
+      await _savedGyms(uid).doc(placeId).delete();
+      await _users.doc(uid).set({
+        'savedGymIds': FieldValue.arrayRemove([placeId]),
+      }, SetOptions(merge: true));
+      return;
+    }
+
+    // Some Places responses can have an empty ID. Remove the matching saved
+    // record by its stored placeId instead of calling Firestore doc('').
+    final snapshot = await _savedGyms(uid)
+        .where('placeId', isEqualTo: '')
+        .get();
+    for (final doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
   }
 
   // TODO(Firebase): Add workout, meal, history, and progress methods in later phases.
