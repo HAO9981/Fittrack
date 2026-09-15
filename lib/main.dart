@@ -14,12 +14,12 @@ Future<void> main() async {
   );
 
   await FirebaseAppCheck.instance.activate(
-    providerAndroid: kDebugMode
-        ? const AndroidDebugProvider()
-        : const AndroidPlayIntegrityProvider(),
-    providerApple: kDebugMode
-        ? const AppleDebugProvider()
-        : const AppleDeviceCheckProvider(),
+    androidProvider: kDebugMode
+        ? AndroidProvider.debug
+        : AndroidProvider.playIntegrity,
+    appleProvider: kDebugMode
+        ? AppleProvider.debug
+        : AppleProvider.deviceCheck,
   );
 
   runApp(const App());
