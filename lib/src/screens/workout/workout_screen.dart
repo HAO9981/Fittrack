@@ -7,14 +7,29 @@ import '../../widgets/app_empty_state.dart';
 import 'add_workout_screen.dart';
 import 'edit_workout_screen.dart';
 
-class WorkoutScreen extends StatelessWidget {
+class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
+
+  @override
+  State<WorkoutScreen> createState() => _WorkoutScreenState();
+}
+
+class _WorkoutScreenState extends State<WorkoutScreen> {
+  late final Stream<List<Workout>> _workoutsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // Keep one Firestore stream for the lifetime of this screen instead of
+    // recreating the query on every widget rebuild.
+    _workoutsStream = WorkoutService.instance.getWorkouts();
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('My Workouts')),
         body: StreamBuilder<List<Workout>>(
-          stream: WorkoutService.instance.getWorkouts(),
+          stream: _workoutsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
