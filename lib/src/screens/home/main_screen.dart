@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../gyms/gyms_screen.dart';
 import '../profile/profile_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../workout/workout_screen.dart';
@@ -19,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
     DashboardScreen(),
     WorkoutScreen(),
     NutritionScreen(),
-    Center(child: Text('Gyms Map', style: TextStyle(fontSize: 18))),
+    GymsScreen(),
     ProfileScreen(),
   ];
 
