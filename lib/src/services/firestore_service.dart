@@ -29,5 +29,24 @@ class FirestoreService {
     await _users.doc(profile.uid).set(profile.toMap(), SetOptions(merge: true));
   }
 
+  CollectionReference<Map<String, dynamic>> _savedGyms(String uid) =>
+      _users.doc(uid).collection('savedGyms');
+
+  Future<Set<String>> getSavedGymIds(String uid) async {
+    final snapshot = await _savedGyms(uid).get();
+    return snapshot.docs.map((doc) => doc.id).toSet();
+  }
+
+  Future<void> saveGym(String uid, String placeId) async {
+    await _savedGyms(uid).doc(placeId).set({
+      'placeId': placeId,
+      'savedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> removeSavedGym(String uid, String placeId) async {
+    await _savedGyms(uid).doc(placeId).delete();
+  }
+
   // TODO(Firebase): Add workout, meal, history, and progress methods in later phases.
 }
