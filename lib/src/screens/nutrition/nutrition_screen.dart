@@ -16,6 +16,13 @@ class NutritionScreen extends StatefulWidget {
 
 class _NutritionScreenState extends State<NutritionScreen> {
   DateTime _selectedDate = DateUtils.dateOnly(DateTime.now());
+  late Stream<List<Meal>> _mealsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _mealsStream = NutritionService.instance.getMealsByDate(_selectedDate);
+  }
 
   Future<void> _selectDate() async {
     final selectedDate = await showDatePicker(
@@ -25,7 +32,12 @@ class _NutritionScreenState extends State<NutritionScreen> {
       lastDate: DateTime.now().add(const Duration(days: 1)),
     );
     if (selectedDate != null && mounted) {
-      setState(() => _selectedDate = DateUtils.dateOnly(selectedDate));
+      final date = DateUtils.dateOnly(selectedDate);
+      setState(() {
+        _selectedDate = date;
+        // Recreate the query only when the user actually changes the date.
+        _mealsStream = NutritionService.instance.getMealsByDate(date);
+      });
     }
   }
 
@@ -42,7 +54,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
           ],
         ),
         body: StreamBuilder<List<Meal>>(
-          stream: NutritionService.instance.getMealsByDate(_selectedDate),
+          stream: _mealsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
