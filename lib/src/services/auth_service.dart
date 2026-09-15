@@ -12,6 +12,7 @@ abstract class AuthService {
     required String password,
     required String displayName,
   });
+  Future<void> updateDisplayName(String displayName);
   Future<void> signOut();
 }
 
@@ -54,6 +55,18 @@ class FirebaseAuthService implements AuthService {
     await credential.user!.updateDisplayName(displayName.trim());
     await credential.user!.reload();
     return AppUser.fromFirebaseUser(_auth.currentUser!);
+  }
+
+  @override
+  Future<void> updateDisplayName(String displayName) async {
+    final user = _auth.currentUser;
+    if (user == null) throw StateError('Please sign in before updating your profile.');
+
+    final trimmedName = displayName.trim();
+    if (trimmedName.isEmpty) throw ArgumentError('Display name cannot be empty.');
+
+    await user.updateDisplayName(trimmedName);
+    await user.reload();
   }
 
   @override
