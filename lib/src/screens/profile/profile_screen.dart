@@ -45,6 +45,7 @@ class _ProfileFormState extends State<_ProfileForm> {
   late final TextEditingController _ageController;
   late final TextEditingController _heightController;
   late final TextEditingController _weightController;
+  late final TextEditingController _targetWeightController;
   late String? _gender;
   late String? _fitnessGoal;
   bool _isSaving = false;
@@ -59,6 +60,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     _ageController = TextEditingController(text: widget.profile.age?.toString() ?? '');
     _heightController = TextEditingController(text: widget.profile.heightCm?.toString() ?? '');
     _weightController = TextEditingController(text: widget.profile.weightKg?.toString() ?? '');
+    _targetWeightController = TextEditingController(text: widget.profile.targetWeightKg?.toString() ?? '');
     _gender = widget.profile.gender;
     _fitnessGoal = widget.profile.fitnessGoal;
   }
@@ -69,6 +71,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     _ageController.dispose();
     _heightController.dispose();
     _weightController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -85,6 +88,7 @@ class _ProfileFormState extends State<_ProfileForm> {
       age: int.tryParse(_ageController.text),
       heightCm: double.tryParse(_heightController.text),
       weightKg: double.tryParse(_weightController.text),
+      targetWeightKg: double.tryParse(_targetWeightController.text),
       fitnessGoal: _fitnessGoal,
       createdAt: widget.profile.createdAt,
     );
@@ -92,7 +96,6 @@ class _ProfileFormState extends State<_ProfileForm> {
     try {
       await FirestoreService.instance.updateUserProfile(profile);
 
-      // Keep Firebase Authentication's displayName in sync with the profile.
       if (displayName != widget.profile.displayName) {
         await FirebaseAuthService.instance.updateDisplayName(displayName);
       }
@@ -156,8 +159,15 @@ class _ProfileFormState extends State<_ProfileForm> {
                   TextFormField(
                     controller: _weightController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Weight (kg)'),
+                    decoration: const InputDecoration(labelText: 'Current weight (kg)'),
                     validator: (value) => value != null && value.isNotEmpty && double.tryParse(value) == null ? 'Enter a valid weight.' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _targetWeightController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: 'Target weight (kg)'),
+                    validator: (value) => value != null && value.isNotEmpty && double.tryParse(value) == null ? 'Enter a valid target weight.' : null,
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
