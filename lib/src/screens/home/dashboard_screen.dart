@@ -8,8 +8,29 @@ import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/dashboard_stat_card.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late final Stream<List<Workout>> _todayWorkoutsStream;
+  late final Stream<List<Workout>> _recentWorkoutsStream;
+  late final Stream<List<Meal>> _todayMealsStream;
+  late final Stream<List<Meal>> _recentMealsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // Create each Firestore stream once for this screen instead of creating
+    // new query/listener objects every time the dashboard rebuilds.
+    _todayWorkoutsStream = WorkoutService.instance.getTodayWorkouts();
+    _recentWorkoutsStream = WorkoutService.instance.getRecentWorkouts();
+    _todayMealsStream = NutritionService.instance.getTodayMeals();
+    _recentMealsStream = NutritionService.instance.getRecentMeals();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +39,13 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('FitTrack')),
       body: StreamBuilder<List<Workout>>(
-        stream: WorkoutService.instance.getTodayWorkouts(),
+        stream: _todayWorkoutsStream,
         builder: (context, todayWorkoutSnapshot) => StreamBuilder<List<Workout>>(
-          stream: WorkoutService.instance.getRecentWorkouts(),
+          stream: _recentWorkoutsStream,
           builder: (context, recentWorkoutSnapshot) => StreamBuilder<List<Meal>>(
-            stream: NutritionService.instance.getTodayMeals(),
+            stream: _todayMealsStream,
             builder: (context, todayMealSnapshot) => StreamBuilder<List<Meal>>(
-              stream: NutritionService.instance.getRecentMeals(),
+              stream: _recentMealsStream,
               builder: (context, recentMealSnapshot) {
                 final snapshots = [
                   todayWorkoutSnapshot,
