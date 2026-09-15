@@ -105,8 +105,8 @@ class _ProgressContent extends StatelessWidget {
     final weeklyMinutes = weeklyWorkouts.fold(0, (total, workout) => total + workout.duration);
     final weeklyCalories = weeklyMeals.fold(0, (total, meal) => total + meal.calories);
     final averageDailyCalories = weeklyMeals.isEmpty ? 0 : (weeklyCalories / 7).round();
-    final workoutGoal = 3;
-    final workoutProgress = (weeklyWorkouts.length / workoutGoal).clamp(0.0, 1.0);
+    const workoutGoal = 3;
+    final double workoutProgress = (weeklyWorkouts.length / workoutGoal).clamp(0.0, 1.0);
     final bmi = _calculateBmi(profile?.weightKg, profile?.heightCm);
 
     return ListView(
