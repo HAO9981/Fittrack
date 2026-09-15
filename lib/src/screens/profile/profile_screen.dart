@@ -75,10 +75,12 @@ class _ProfileFormState extends State<_ProfileForm> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
+
+    final displayName = _nameController.text.trim();
     final profile = UserProfile(
       uid: widget.profile.uid,
       email: widget.profile.email,
-      displayName: _nameController.text.trim(),
+      displayName: displayName,
       gender: _gender,
       age: int.tryParse(_ageController.text),
       heightCm: double.tryParse(_heightController.text),
@@ -89,9 +91,23 @@ class _ProfileFormState extends State<_ProfileForm> {
 
     try {
       await FirestoreService.instance.updateUserProfile(profile);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile saved.')));
+
+      // Keep Firebase Authentication's displayName in sync with the profile.
+      if (displayName != widget.profile.displayName) {
+        await FirebaseAuthService.instance.updateDisplayName(displayName);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile saved.')),
+        );
+      }
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to save your profile.')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to save your profile.')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
