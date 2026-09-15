@@ -43,9 +43,15 @@ class NutritionService {
   }
 
   /// Returns only the latest meals needed by the dashboard.
-  Stream<List<Meal>> getRecentMeals({int limit = 3}) {
+  Stream<List<Meal>> getRecentMeals({int limit = 3, Duration? lookback}) {
     try {
-      return _meals
+      Query<Map<String, dynamic>> query = _meals;
+      if (lookback != null) {
+        final cutoff = Timestamp.fromDate(DateTime.now().subtract(lookback));
+        query = query.where('date', isGreaterThanOrEqualTo: cutoff);
+      }
+
+      return query
           .orderBy('date', descending: true)
           .limit(limit)
           .snapshots()
