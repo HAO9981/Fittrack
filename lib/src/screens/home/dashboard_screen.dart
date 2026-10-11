@@ -47,7 +47,6 @@ class _DashboardContent extends StatelessWidget {
     final weekStart = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
     final weekWorkouts = workouts.where((w) => !w.date.isBefore(weekStart)).toList();
     final minutes = todayWorkouts.fold<int>(0, (sum, w) => sum + w.duration);
-    final burned = todayWorkouts.fold<int>(0, (sum, w) => sum + w.caloriesBurned);
     final eaten = todayMeals.fold<int>(0, (sum, m) => sum + m.calories);
     final greeting = now.hour < 12 ? 'Good morning,' : now.hour < 18 ? 'Good afternoon,' : 'Good evening,';
     final dayLabels = const ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -85,7 +84,7 @@ class _DashboardContent extends StatelessWidget {
       ])),
       const SizedBox(height: 14),
       Row(children: [
-        Expanded(child: _MetricCard(icon: Icons.local_fire_department_rounded, iconColor: const Color(0xFFFFA44A), label: 'Burned', value: '$burned', unit: 'kcal')),
+        Expanded(child: _MetricCard(icon: Icons.local_fire_department_rounded, iconColor: const Color(0xFFFFA44A), label: 'Active', value: '$minutes', unit: 'min')),
         const SizedBox(width: 10),
         Expanded(child: _MetricCard(icon: Icons.restaurant_rounded, iconColor: const Color(0xFF82C84A), label: 'Consumed', value: '$eaten', unit: 'kcal')),
         const SizedBox(width: 10),
@@ -121,7 +120,7 @@ class _DashboardContent extends StatelessWidget {
       ]),
       const SizedBox(height: 10),
       if (workouts.isEmpty) const AppEmptyState(icon: Icons.fitness_center_outlined, title: 'No workouts yet', message: 'Your workouts will show up here.')
-      else ...workouts.take(3).map((w) => _RecentTile(icon: Icons.fitness_center_rounded, title: w.name, subtitle: '${w.category} · ${w.duration} min', trailing: '${w.caloriesBurned} kcal')),
+      else ...workouts.take(3).map((w) => _RecentTile(icon: Icons.fitness_center_rounded, title: w.name, subtitle: '${w.category} · ${w.duration} min', trailing: '${w.duration} min')),
       const SizedBox(height: 20),
       const Text('Recent meals', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _ink, letterSpacing: -0.4)),
       const SizedBox(height: 10),
