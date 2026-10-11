@@ -55,7 +55,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
           const SizedBox(height: 16),
           Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)), child: Row(children: [
             SizedBox(width: 124, height: 124, child: Stack(alignment: Alignment.center, children: [
-              SizedBox.expand(child: CircularProgressIndicator(value: (total / 2000).clamp(0.0, 1.0), strokeWidth: 10, backgroundColor: const Color(0xFFE7EAE4), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
+              SizedBox.expand(child: CircularProgressIndicator(value: (total / 2000).clamp(0.0, 1.0).toDouble(), strokeWidth: 10, backgroundColor: const Color(0xFFE7EAE4), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
               Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFFA52D), size: 20), const SizedBox(height: 3), Text(total.toString(), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _ink)), const Text('of 2,000 kcal', style: TextStyle(fontSize: 10, color: _muted))]),
             ])),
             const SizedBox(width: 17),
