@@ -87,7 +87,7 @@ class _Chart extends StatelessWidget {
     final totals = List<int>.generate(7, (i) { final d = today.subtract(Duration(days: 6-i)); return workouts.where((w) => DateUtils.isSameDay(w.date, d)).fold<int>(0, (s,w) => s+w.duration); });
     final max = totals.fold<int>(0, (a,b) => a>b?a:b);
     return Container(height: 125, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)), child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: List.generate(7, (i) {
-      final d = today.subtract(Duration(days: 6-i)); final h = max == 0 ? 8.0 : (totals[i] / max * 65).clamp(8.0, 65.0);
+      final d = today.subtract(Duration(days: 6-i)); final h = max == 0 ? 8.0 : (totals[i] / max * 65).clamp(8.0, 65.0).toDouble();
       return Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [Container(height: h, width: 10, decoration: BoxDecoration(color: totals[i] > 0 ? lime : const Color(0xFFE0E4DC), borderRadius: BorderRadius.circular(8))), const SizedBox(height: 7), Text(labels[d.weekday-1], style: const TextStyle(fontSize: 10, color: muted))]));
     })));
   }
