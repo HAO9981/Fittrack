@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/meal.dart';
 import '../../models/workout.dart';
+import '../../models/user_profile.dart';
 import '../../services/auth_service.dart';
+import '../../services/firestore_service.dart';
 import '../../services/nutrition_service.dart';
 import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
@@ -15,9 +17,15 @@ class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    final raw = FirebaseAuthService.instance.currentUser?.displayName?.trim() ?? '';
-    final name = raw.isEmpty ? 'there' : raw.split(' ').first;
-    return Scaffold(backgroundColor: bg, body: SafeArea(child: StreamBuilder<List<Workout>>(
+    final user = FirebaseAuthService.instance.currentUser;
+    final authName = user?.displayName?.trim() ?? '';
+    return StreamBuilder<UserProfile?>(
+      stream: user == null ? const Stream<UserProfile?>.empty() : FirestoreService.instance.userProfileStream(user.uid),
+      builder: (context, profileSnapshot) {
+        final savedName = profileSnapshot.data?.displayName.trim() ?? '';
+        final raw = savedName.isNotEmpty && savedName != 'FitTrack User' ? savedName : authName;
+        final name = raw.isEmpty ? 'there' : raw.split(' ').first;
+        return Scaffold(backgroundColor: bg, body: SafeArea(child: StreamBuilder<List<Workout>>(
       stream: WorkoutService.instance.getWorkouts(),
       builder: (context, ws) => StreamBuilder<List<Meal>>(
         stream: NutritionService.instance.getMeals(),
@@ -28,6 +36,8 @@ class DashboardScreen extends StatelessWidget {
         },
       ),
     )));
+      },
+    );
   }
 }
 
