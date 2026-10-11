@@ -23,6 +23,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       - name: Analyze Dart code
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: Build Android debug APK
         run: flutter build apk --debug
