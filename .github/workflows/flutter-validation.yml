@@ -1,0 +1,28 @@
+name: Flutter validation
+
+on:
+  push:
+    branches:
+      - main
+      - design/fittrack-lime-minimal
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  analyze-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze Dart code
+        run: flutter analyze
+      - name: Build Android debug APK
+        run: flutter build apk --debug
