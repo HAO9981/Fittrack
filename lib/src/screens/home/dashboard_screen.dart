@@ -5,6 +5,8 @@ import '../../services/auth_service.dart';
 import '../../services/nutrition_service.dart';
 import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
+import '../workout/add_workout_screen.dart';
+import '../nutrition/add_meal_screen.dart';
 
 const lime = Color(0xFF84E221), ink = Color(0xFF232824), muted = Color(0xFF858C83), bg = Color(0xFFF6F7F4);
 
@@ -14,7 +16,7 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final raw = FirebaseAuthService.instance.currentUser?.displayName?.trim() ?? '';
     final name = raw.isEmpty ? 'there' : raw.split(' ').first;
-    return Scaffold(backgroundColor: bg, body: StreamBuilder<List<Workout>>(
+    return Scaffold(backgroundColor: bg, body: SafeArea(child: StreamBuilder<List<Workout>>(
       stream: WorkoutService.instance.getWorkouts(),
       builder: (context, ws) => StreamBuilder<List<Meal>>(
         stream: NutritionService.instance.getMeals(),
@@ -24,7 +26,7 @@ class DashboardScreen extends StatelessWidget {
           return _DashboardContent(name: name, workouts: ws.data ?? const [], meals: ms.data ?? const []);
         },
       ),
-    ));
+    )));
   }
 }
 
@@ -58,8 +60,8 @@ class _DashboardContent extends StatelessWidget {
       const SizedBox(height: 10), _Chart(workouts: weekly, today: today),
       const SizedBox(height: 22), const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 10),
       Row(children: [
-        Expanded(child: _Action(icon: Icons.directions_run_rounded, label: 'Add Workout', onTap: () => Navigator.of(context).pushNamed('/add-workout'))),
-        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Meal', onTap: () => Navigator.of(context).pushNamed('/add-meal'))),
+        Expanded(child: _Action(icon: Icons.directions_run_rounded, label: 'Add Workout', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddWorkoutScreen())))),
+        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Meal', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen())))),
         const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.camera_alt_outlined, label: 'Analyze Food', onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AI Food Analysis is not connected yet.')))),
       ]),
       const SizedBox(height: 22), const Text('Recent Workouts', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 8),
