@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 import '../../models/user_profile.dart';
 import '../../services/auth_service.dart';
@@ -89,6 +90,12 @@ class _ProfileFormState extends State<_ProfileForm> {
 
     try {
       await FirestoreService.instance.updateUserProfile(profile);
+      // Keep Firebase Authentication's display name in sync with the saved profile.
+      final authUser = firebase_auth.FirebaseAuth.instance.currentUser;
+      if (authUser != null && authUser.displayName != profile.displayName) {
+        await authUser.updateDisplayName(profile.displayName);
+        await authUser.reload();
+      }
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile saved.')));
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to save your profile.')));
