@@ -72,7 +72,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Text('Start your FitTrack journey', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
             Text('A healthier routine starts with you.', style: TextStyle(fontSize: 12, color: Color(0xFFD5D9D2))),
           ])),
-        ]),
+        ])),
         const SizedBox(height: 24),
         const Text('Your name', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink)),
         const SizedBox(height: 7),
