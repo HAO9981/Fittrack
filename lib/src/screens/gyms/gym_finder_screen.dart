@@ -93,9 +93,16 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
         }),
       );
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        final body = jsonDecode(response.body);
-        final message = body is Map<String, dynamic> ? (body['error'] as Map<String, dynamic>?)?['message'] as String? : null;
-        throw Exception(message ?? 'Places API request failed (' + response.statusCode.toString() + ').');
+        String? message;
+        final errorBody = jsonDecode(response.body);
+        if (errorBody is Map<String, dynamic>) {
+          final errorDetails = errorBody['error'];
+          if (errorDetails is Map<String, dynamic>) {
+            final apiMessage = errorDetails['message'];
+            if (apiMessage is String) message = apiMessage;
+          }
+        }
+        throw Exception(message ?? 'Places API request failed (${response.statusCode}).');
       }
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       final raw = body['places'] as List<dynamic>? ?? [];
