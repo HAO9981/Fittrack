@@ -76,7 +76,7 @@ class _DashboardContent extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
-          child: const Row(children: [
+          child: Row(children: [
             Container(width: 42, height: 42, decoration: BoxDecoration(color: Color(0xFFEAF7D9), borderRadius: BorderRadius.all(Radius.circular(14))), child: Icon(Icons.insights_rounded, color: ink)),
             SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
