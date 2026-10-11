@@ -7,6 +7,7 @@ import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
 import '../workout/add_workout_screen.dart';
 import '../nutrition/add_meal_screen.dart';
+import '../insights/insights_screen.dart';
 
 const lime = Color(0xFF84E221), ink = Color(0xFF232824), muted = Color(0xFF858C83), bg = Color(0xFFF6F7F4);
 
@@ -68,6 +69,25 @@ class _DashboardContent extends StatelessWidget {
       if (workouts.isEmpty) const _Empty(text: 'Your workouts will appear here.') else ...workouts.take(3).map((w) => _Recent(icon: Icons.fitness_center_rounded, title: w.name, subtitle: w.category + ' • ' + w.duration.toString() + ' mins')),
       const SizedBox(height: 14), const Text('Recent Meals', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 8),
       if (meals.isEmpty) const _Empty(text: 'Your meals will appear here.') else ...meals.take(3).map((m) => _Recent(icon: Icons.restaurant_rounded, title: m.foodName, subtitle: m.category + ' • ' + m.calories.toString() + ' kcal')),
+      const SizedBox(height: 14),
+      InkWell(
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InsightsScreen())),
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+          child: const Row(children: [
+            Container(width: 42, height: 42, decoration: BoxDecoration(color: Color(0xFFEAF7D9), borderRadius: BorderRadius.all(Radius.circular(14))), child: Icon(Icons.insights_rounded, color: ink)),
+            SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('History, Progress & Tips', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
+              SizedBox(height: 3),
+              Text('Review your activity and see suggestions', style: TextStyle(fontSize: 11, color: muted)),
+            ])),
+            Icon(Icons.chevron_right_rounded, color: muted),
+          ]),
+        ),
+      ),
       TextButton.icon(onPressed: () => FirebaseAuthService.instance.signOut(), icon: const Icon(Icons.logout), label: const Text('Sign out')),
     ]);
   }
