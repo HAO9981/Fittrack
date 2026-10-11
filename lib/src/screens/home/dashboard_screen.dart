@@ -63,7 +63,7 @@ class _DashboardContent extends StatelessWidget {
       Row(children: [
         Expanded(child: _Action(icon: Icons.directions_run_rounded, label: 'Add Workout', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddWorkoutScreen())))),
         const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Meal', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen())))),
-        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.camera_alt_outlined, label: 'Analyze Food', onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AI Food Analysis is not connected yet.')))),
+        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.camera_alt_outlined, label: 'Analyze Food', onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AI Food Analysis is not connected yet.'))))),
       ]),
       const SizedBox(height: 22), const Text('Recent Workouts', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 8),
       if (workouts.isEmpty) const _Empty(text: 'Your workouts will appear here.') else ...workouts.take(3).map((w) => _Recent(icon: Icons.fitness_center_rounded, title: w.name, subtitle: w.category + ' • ' + w.duration.toString() + ' mins')),
