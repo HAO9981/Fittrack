@@ -155,6 +155,67 @@ class _ProgressTab extends StatelessWidget {
 class _WeightProgressCard extends StatelessWidget {
   const _WeightProgressCard();
 
+  Future<void> _logWeight(BuildContext context, String uid) async {
+    final controller = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    final value = await showDialog<double>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log today\'s weight'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Weight (kg)', hintText: 'e.g. 72.5'),
+            validator: (text) {
+              final weight = double.tryParse((text ?? '').trim());
+              if (weight == null || weight < 20 || weight > 400) return 'Enter a valid weight (20–400 kg).';
+              return null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: _muted),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: _ink, foregroundColor: Colors.white),
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(dialogContext, double.parse(controller.text.trim()));
+              }
+            },
+            child: const Text('Save weight'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (value == null) return;
+    try {
+      final userDoc = FirebaseFirestore.instance.collection('users').doc(uid);
+      await userDoc.collection('weightEntries').add({
+        'weightKg': value,
+        'recordedAt': FieldValue.serverTimestamp(),
+      });
+      await userDoc.set({
+        'weightKg': value,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Weight saved.')));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not save weight. Please try again.')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -170,11 +231,29 @@ class _WeightProgressCard extends StatelessWidget {
           if (weight == null || date == null) return null;
           return (weight: weight, date: date);
         }).whereType<({double weight, DateTime date})>().toList();
+        final userWeight = (snapshot.data?.docs.isNotEmpty ?? false)
+            ? entries.isNotEmpty ? entries.last.weight : null
+            : null;
         if (entries.isEmpty) {
-          return const _WeightCardMessage(message: 'Record your weight in Profile and save it. Each new weight will appear here so you can track changes over time.');
+          return Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Weight progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+              const SizedBox(height: 7),
+              const Text('Start tracking your body weight to see how it changes over time.', style: TextStyle(fontSize: 12, height: 1.5, color: _muted)),
+              const SizedBox(height: 14),
+              OutlinedButton.icon(
+                onPressed: () => _logWeight(context, user.uid),
+                style: OutlinedButton.styleFrom(foregroundColor: _ink, side: const BorderSide(color: Color(0xFFD9DED5))),
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Log weight'),
+              ),
+            ]),
+          );
         }
         final first = entries.first.weight;
-        final latest = entries.last.weight;
+        final latest = userWeight ?? entries.last.weight;
         final change = latest - first;
         final changeLabel = change.abs() < 0.05 ? 'No change yet' : '${change < 0 ? 'Down' : 'Up'} ${change.abs().toStringAsFixed(1)} kg since first entry';
         final chartEntries = entries.length > 12 ? entries.sublist(entries.length - 12) : entries;
@@ -187,7 +266,7 @@ class _WeightProgressCard extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('Weight progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
             const SizedBox(height: 5),
-            const Text('Based on weight entries saved from your Profile.', style: TextStyle(fontSize: 11, color: _muted)),
+            const Text('Log your weight here whenever you want to check your progress.', style: TextStyle(fontSize: 11, color: _muted)),
             const SizedBox(height: 14),
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -216,6 +295,13 @@ class _WeightProgressCard extends StatelessWidget {
                 ])));
               }).toList())),
             ],
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: () => _logWeight(context, user.uid),
+              style: OutlinedButton.styleFrom(foregroundColor: _ink, side: const BorderSide(color: Color(0xFFD9DED5))),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Log weight'),
+            ),
           ]),
         );
       },
