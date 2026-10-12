@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/user_profile.dart';
 import '../../services/auth_service.dart';
@@ -90,6 +91,16 @@ class _ProfileFormState extends State<_ProfileForm> {
 
     try {
       await FirestoreService.instance.updateUserProfile(profile);
+      if (profile.weightKg != null && profile.weightKg != widget.profile.weightKg) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(profile.uid)
+            .collection('weightEntries')
+            .add({
+          'weightKg': profile.weightKg,
+          'recordedAt': FieldValue.serverTimestamp(),
+        });
+      }
       // Keep Firebase Authentication's display name in sync with the saved profile.
       final authUser = firebase_auth.FirebaseAuth.instance.currentUser;
       if (authUser != null && authUser.displayName != profile.displayName) {
