@@ -47,6 +47,7 @@ class _ProfileFormState extends State<_ProfileForm> {
   late final TextEditingController _ageController;
   late final TextEditingController _heightController;
   late final TextEditingController _weightController;
+  late final TextEditingController _targetWeightController;
   late String? _gender;
   late String? _fitnessGoal;
   bool _isSaving = false;
@@ -61,6 +62,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     _ageController = TextEditingController(text: widget.profile.age?.toString() ?? '');
     _heightController = TextEditingController(text: widget.profile.heightCm?.toString() ?? '');
     _weightController = TextEditingController(text: widget.profile.weightKg?.toString() ?? '');
+    _targetWeightController = TextEditingController(text: widget.profile.targetWeightKg?.toString() ?? '');
     _gender = widget.profile.gender;
     _fitnessGoal = widget.profile.fitnessGoal;
   }
@@ -71,6 +73,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     _ageController.dispose();
     _heightController.dispose();
     _weightController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -85,6 +88,7 @@ class _ProfileFormState extends State<_ProfileForm> {
       age: int.tryParse(_ageController.text),
       heightCm: double.tryParse(_heightController.text),
       weightKg: double.tryParse(_weightController.text),
+      targetWeightKg: double.tryParse(_targetWeightController.text),
       fitnessGoal: _fitnessGoal,
       createdAt: widget.profile.createdAt,
     );
@@ -203,6 +207,17 @@ class _ProfileFormState extends State<_ProfileForm> {
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           decoration: const InputDecoration(labelText: 'Weight (kg)', prefixIcon: Icon(Icons.monitor_weight_outlined)),
                           validator: (value) => value != null && value.isNotEmpty && double.tryParse(value) == null ? 'Enter a valid weight.' : null,
+                        ),
+                        const SizedBox(height: 13),
+                        TextFormField(
+                          controller: _targetWeightController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Target weight (kg)', prefixIcon: Icon(Icons.flag_circle_outlined), helperText: 'Optional — used to track your weight goal.'),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) return null;
+                            final weight = double.tryParse(value.trim());
+                            return weight == null || weight < 20 || weight > 400 ? 'Enter a target between 20 and 400 kg.' : null;
+                          },
                         ),
                         const SizedBox(height: 13),
                         DropdownButtonFormField<String>(
