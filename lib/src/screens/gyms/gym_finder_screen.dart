@@ -50,6 +50,14 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
   String? _selectedId;
   static const _categories = ['All', 'Gym', 'Yoga', 'Swimming', 'Sports'];
 
+  List<String> get _includedPlaceTypes => switch (_category) {
+    'Gym' => ['gym'],
+    'Yoga' => ['yoga_studio'],
+    'Swimming' => ['swimming_pool'],
+    'Sports' => ['sports_club', 'sports_complex', 'stadium', 'athletic_field'],
+    _ => ['gym', 'yoga_studio', 'swimming_pool', 'sports_club', 'sports_complex', 'stadium', 'athletic_field'],
+  };
+
   @override void initState() {
     super.initState();
     _searchController.addListener(_refreshView);
@@ -86,7 +94,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
           'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.googleMapsUri,places.primaryType',
         },
         body: jsonEncode({
-          'includedTypes': ['gym'],
+          'includedTypes': _includedPlaceTypes,
           'maxResultCount': 20,
           'rankPreference': 'DISTANCE',
           'locationRestriction': {'circle': {'center': {'latitude': position.latitude, 'longitude': position.longitude}, 'radius': 8000.0}},
@@ -124,9 +132,10 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
       final matchesSearch = query.isEmpty || p.name.toLowerCase().contains(query) || p.address.toLowerCase().contains(query) || p.type.toLowerCase().contains(query);
       final type = p.type.toLowerCase();
       final matchesCategory = switch (_category) {
+        'Gym' => type == 'gym' || type.contains('fitness_center'),
         'Yoga' => type.contains('yoga'),
         'Swimming' => type.contains('swim'),
-        'Sports' => type.contains('sport') || type.contains('stadium'),
+        'Sports' => type.contains('sport') || type.contains('stadium') || type.contains('athletic_field'),
         _ => true,
       };
       return matchesSearch && matchesCategory;
@@ -162,7 +171,11 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
         SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: _categories.map((cat) {
           final selected = _category == cat;
           return Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(
-            label: Text(cat), selected: selected, onSelected: (_) => setState(() => _category = cat),
+            label: Text(cat), selected: selected, onSelected: (_) {
+              if (_category == cat) return;
+              setState(() { _category = cat; _places = []; _selectedId = null; });
+              _loadNearbyPlaces();
+            },
             selectedColor: _lime, backgroundColor: Colors.white, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(),
             labelStyle: TextStyle(color: _ink, fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
           ));
