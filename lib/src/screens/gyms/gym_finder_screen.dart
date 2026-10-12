@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -48,19 +50,22 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
   Position? _position;
   List<_GymPlace> _places = [];
   String? _selectedId;
-  static const _categories = ['All', 'Gym', 'Yoga', 'Swimming', 'Sports'];
+  final Set<String> _savedIds = {};
+  static const _categories = ['All', 'Gym', 'Yoga', 'Swimming', 'Sports', 'Saved'];
 
   List<String> get _includedPlaceTypes => switch (_category) {
     'Gym' => ['gym'],
     'Yoga' => ['yoga_studio'],
     'Swimming' => ['swimming_pool'],
     'Sports' => ['sports_club', 'sports_complex', 'stadium', 'athletic_field'],
+    'Saved' => [],
     _ => ['gym', 'yoga_studio', 'swimming_pool', 'sports_club', 'sports_complex', 'stadium', 'athletic_field'],
   };
 
   @override void initState() {
     super.initState();
     _searchController.addListener(_refreshView);
+    _loadSavedPlaces();
     if (_placesApiKey.isNotEmpty) _loadNearbyPlaces();
   }
   @override void dispose() {
@@ -78,7 +83,72 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
     return Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.high));
   }
 
+  CollectionReference<Map<String, dynamic>>? get _savedCollection {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+    return FirebaseFirestore.instance.collection('users').doc(user.uid).collection('savedPlaces');
+  }
+
+  Future<void> _loadSavedPlaces() async {
+    final collection = _savedCollection;
+    if (collection == null) return;
+    try {
+      final snapshot = await collection.get();
+      if (!mounted) return;
+      final saved = snapshot.docs.map((doc) => _GymPlace.fromJson(doc.data())).toList();
+      setState(() {
+        _savedIds
+          ..clear()
+          ..addAll(snapshot.docs.map((doc) => doc.id));
+        if (_category == 'Saved') _places = saved;
+      });
+    } catch (_) {
+      // Keep Gym Finder usable if saved-place loading is temporarily unavailable.
+    }
+  }
+
+  Future<void> _toggleSaved(_GymPlace place) async {
+    final collection = _savedCollection;
+    if (collection == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign in to save places.')));
+      return;
+    }
+    final doc = collection.doc(place.id);
+    try {
+      if (_savedIds.contains(place.id)) {
+        await doc.delete();
+        if (!mounted) return;
+        setState(() {
+          _savedIds.remove(place.id);
+          if (_category == 'Saved') _places.removeWhere((item) => item.id == place.id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed from saved places.')));
+      } else {
+        await doc.set({
+          'id': place.id,
+          'displayName': {'text': place.name},
+          'formattedAddress': place.address,
+          'location': {'latitude': place.position.latitude, 'longitude': place.position.longitude},
+          'rating': place.rating,
+          'userRatingCount': place.ratingCount,
+          'googleMapsUri': place.mapsUrl,
+          'primaryType': place.type,
+          'savedAt': FieldValue.serverTimestamp(),
+        });
+        if (!mounted) return;
+        setState(() => _savedIds.add(place.id));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Place saved.')));
+      }
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to update saved places.')));
+    }
+  }
+
   Future<void> _loadNearbyPlaces() async {
+    if (_category == 'Saved') {
+      await _loadSavedPlaces();
+      return;
+    }
     if (_placesApiKey.isEmpty) {
       setState(() { _error = 'Google Maps API key is not configured yet.'; _loading = false; });
       return;
@@ -136,6 +206,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
         'Yoga' => type.contains('yoga'),
         'Swimming' => type.contains('swim'),
         'Sports' => type.contains('sport') || type.contains('stadium') || type.contains('athletic_field'),
+        'Saved' => _savedIds.contains(p.id),
         _ => true,
       };
       return matchesSearch && matchesCategory;
@@ -174,7 +245,11 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
             label: Text(cat), selected: selected, onSelected: (_) {
               if (_category == cat) return;
               setState(() { _category = cat; _places = []; _selectedId = null; });
-              _loadNearbyPlaces();
+              if (cat == 'Saved') {
+                _loadSavedPlaces();
+              } else {
+                _loadNearbyPlaces();
+              }
             },
             selectedColor: _lime, backgroundColor: Colors.white, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(),
             labelStyle: TextStyle(color: _ink, fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
@@ -254,7 +329,15 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
               ]),
             ],
           ])),
-          const SizedBox(width: 5), const Icon(Icons.near_me_outlined, color: _muted, size: 20),
+          const SizedBox(width: 5),
+          IconButton(
+            tooltip: _savedIds.contains(place.id) ? 'Remove saved place' : 'Save place',
+            onPressed: () => _toggleSaved(place),
+            icon: Icon(
+              _savedIds.contains(place.id) ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              color: _savedIds.contains(place.id) ? _ink : _muted,
+            ),
+          ),
         ]),
       )),
     ));
