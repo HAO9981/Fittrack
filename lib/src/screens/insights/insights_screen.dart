@@ -204,10 +204,16 @@ class _WeightProgressCard extends StatelessWidget {
         'weightKg': value,
         'recordedAt': FieldValue.serverTimestamp(),
       });
-      await userDoc.set({
+      final userSnapshot = await userDoc.get();
+      final profileData = userSnapshot.data() ?? <String, dynamic>{};
+      final updates = <String, dynamic>{
         'weightKg': value,
         'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      };
+      if (profileData['startingWeightKg'] == null) {
+        updates['startingWeightKg'] = value;
+      }
+      await userDoc.set(updates, SetOptions(merge: true));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Weight saved.')));
       }
