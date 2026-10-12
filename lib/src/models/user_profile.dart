@@ -11,6 +11,7 @@ class UserProfile {
     this.age,
     this.heightCm,
     this.weightKg,
+    this.targetWeightKg,
     this.fitnessGoal,
     this.createdAt,
     this.updatedAt,
@@ -23,6 +24,7 @@ class UserProfile {
   final int? age;
   final double? heightCm;
   final double? weightKg;
+  final double? targetWeightKg;
   final String? fitnessGoal;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -43,6 +45,7 @@ class UserProfile {
       age: data['age'] as int?,
       heightCm: (data['heightCm'] as num?)?.toDouble(),
       weightKg: (data['weightKg'] as num?)?.toDouble(),
+      targetWeightKg: (data['targetWeightKg'] as num?)?.toDouble(),
       fitnessGoal: data['fitnessGoal'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
@@ -57,6 +60,7 @@ class UserProfile {
         'age': age,
         'heightCm': heightCm,
         'weightKg': weightKg,
+        'targetWeightKg': targetWeightKg,
         'fitnessGoal': fitnessGoal,
         'createdAt': createdAt == null ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt!),
         'updatedAt': FieldValue.serverTimestamp(),

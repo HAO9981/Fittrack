@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/user_profile.dart';
 import '../../services/auth_service.dart';
@@ -45,6 +47,7 @@ class _ProfileFormState extends State<_ProfileForm> {
   late final TextEditingController _ageController;
   late final TextEditingController _heightController;
   late final TextEditingController _weightController;
+  late final TextEditingController _targetWeightController;
   late String? _gender;
   late String? _fitnessGoal;
   bool _isSaving = false;
@@ -59,6 +62,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     _ageController = TextEditingController(text: widget.profile.age?.toString() ?? '');
     _heightController = TextEditingController(text: widget.profile.heightCm?.toString() ?? '');
     _weightController = TextEditingController(text: widget.profile.weightKg?.toString() ?? '');
+    _targetWeightController = TextEditingController(text: widget.profile.targetWeightKg?.toString() ?? '');
     _gender = widget.profile.gender;
     _fitnessGoal = widget.profile.fitnessGoal;
   }
@@ -69,6 +73,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     _ageController.dispose();
     _heightController.dispose();
     _weightController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -83,12 +88,29 @@ class _ProfileFormState extends State<_ProfileForm> {
       age: int.tryParse(_ageController.text),
       heightCm: double.tryParse(_heightController.text),
       weightKg: double.tryParse(_weightController.text),
+      targetWeightKg: double.tryParse(_targetWeightController.text),
       fitnessGoal: _fitnessGoal,
       createdAt: widget.profile.createdAt,
     );
 
     try {
       await FirestoreService.instance.updateUserProfile(profile);
+      if (profile.weightKg != null && profile.weightKg != widget.profile.weightKg) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(profile.uid)
+            .collection('weightEntries')
+            .add({
+          'weightKg': profile.weightKg,
+          'recordedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      // Keep Firebase Authentication's display name in sync with the saved profile.
+      final authUser = firebase_auth.FirebaseAuth.instance.currentUser;
+      if (authUser != null && authUser.displayName != profile.displayName) {
+        await authUser.updateDisplayName(profile.displayName);
+        await authUser.reload();
+      }
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile saved.')));
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to save your profile.')));
@@ -99,61 +121,136 @@ class _ProfileFormState extends State<_ProfileForm> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Profile')),
+        backgroundColor: const Color(0xFFF6F7F4),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(18, 14, 18, 28),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(widget.profile.email ?? '', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Display name'),
-                    validator: (value) => value == null || value.trim().isEmpty ? 'Enter your name.' : null,
+                  Row(
+                    children: [
+                      const Expanded(child: Text('Profile', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF232824)))),
+                      IconButton(
+                        tooltip: 'Account settings',
+                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You can update your personal details below.'))),
+                        icon: const Icon(Icons.settings_outlined, color: Color(0xFF232824)),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _gender,
-                    decoration: const InputDecoration(labelText: 'Gender'),
-                    items: _genders.map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
-                    onChanged: (value) => setState(() => _gender = value),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundColor: const Color(0xFFEAF4DE),
+                          child: Text(
+                            _nameController.text.trim().isEmpty ? 'U' : _nameController.text.trim()[0].toUpperCase(),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF232824)),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(_nameController.text.trim().isEmpty ? 'FitTrack member' : _nameController.text.trim(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF232824))),
+                            const SizedBox(height: 4),
+                            Text(widget.profile.email ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF858C83))),
+                            const SizedBox(height: 7),
+                            const Text('Edit Profile', style: TextStyle(fontSize: 12, color: Color(0xFF6AAE20), fontWeight: FontWeight.w700)),
+                          ]),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _ageController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Age'),
-                    validator: (value) => value != null && value.isNotEmpty && int.tryParse(value) == null ? 'Enter a valid age.' : null,
+                  const SizedBox(height: 20),
+                  const Text('Personal details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF232824))),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(labelText: 'Display name', prefixIcon: Icon(Icons.person_outline_rounded)),
+                          validator: (value) => value == null || value.trim().isEmpty ? 'Enter your name.' : null,
+                        ),
+                        const SizedBox(height: 13),
+                        DropdownButtonFormField<String>(
+                          value: _gender,
+                          decoration: const InputDecoration(labelText: 'Gender', prefixIcon: Icon(Icons.wc_rounded)),
+                          items: _genders.map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
+                          onChanged: (value) => setState(() => _gender = value),
+                        ),
+                        const SizedBox(height: 13),
+                        TextFormField(
+                          controller: _ageController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'Age', prefixIcon: Icon(Icons.cake_outlined)),
+                          validator: (value) => value != null && value.isNotEmpty && int.tryParse(value) == null ? 'Enter a valid age.' : null,
+                        ),
+                        const SizedBox(height: 13),
+                        TextFormField(
+                          controller: _heightController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Height (cm)', prefixIcon: Icon(Icons.height_rounded)),
+                          validator: (value) => value != null && value.isNotEmpty && double.tryParse(value) == null ? 'Enter a valid height.' : null,
+                        ),
+                        const SizedBox(height: 13),
+                        TextFormField(
+                          controller: _weightController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Weight (kg)', prefixIcon: Icon(Icons.monitor_weight_outlined)),
+                          validator: (value) => value != null && value.isNotEmpty && double.tryParse(value) == null ? 'Enter a valid weight.' : null,
+                        ),
+                        const SizedBox(height: 13),
+                        TextFormField(
+                          controller: _targetWeightController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Target weight (kg)', prefixIcon: Icon(Icons.flag_circle_outlined), helperText: 'Optional — used to track your weight goal.'),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) return null;
+                            final weight = double.tryParse(value.trim());
+                            return weight == null || weight < 20 || weight > 400 ? 'Enter a target between 20 and 400 kg.' : null;
+                          },
+                        ),
+                        const SizedBox(height: 13),
+                        DropdownButtonFormField<String>(
+                          value: _fitnessGoal,
+                          decoration: const InputDecoration(labelText: 'Fitness goal', prefixIcon: Icon(Icons.flag_outlined)),
+                          items: _goals.map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
+                          onChanged: (value) => setState(() => _fitnessGoal = value),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _heightController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Height (cm)'),
-                    validator: (value) => value != null && value.isNotEmpty && double.tryParse(value) == null ? 'Enter a valid height.' : null,
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _save,
+                      child: Text(_isSaving ? 'Saving...' : 'Save profile'),
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _weightController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Weight (kg)'),
-                    validator: (value) => value != null && value.isNotEmpty && double.tryParse(value) == null ? 'Enter a valid weight.' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _fitnessGoal,
-                    decoration: const InputDecoration(labelText: 'Fitness goal'),
-                    items: _goals.map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
-                    onChanged: (value) => setState(() => _fitnessGoal = value),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _isSaving ? null : _save,
-                    child: Text(_isSaving ? 'Saving...' : 'Save profile'),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () => FirebaseAuthService.instance.signOut(),
+                      icon: const Icon(Icons.logout_rounded),
+                      label: const Text('Log Out'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFB23B3B),
+                        backgroundColor: const Color(0xFFFBE6E4),
+                        side: BorderSide.none,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
                   ),
                 ],
               ),

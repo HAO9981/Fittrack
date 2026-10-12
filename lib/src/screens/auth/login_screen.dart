@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'register_screen.dart';
 
+const _lime = Color(0xFF84E221);
+const _ink = Color(0xFF232824);
+const _muted = Color(0xFF858C83);
+const _bg = Color(0xFFF6F7F4);
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  @override State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -16,9 +19,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _hidePassword = true;
 
-  @override
-  void dispose() {
+  @override void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -27,18 +30,30 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signIn() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-
     try {
-      await FirebaseAuthService.instance.signInWithEmail(
-        _emailController.text,
-        _passwordController.text,
-      );
+      await FirebaseAuthService.instance.signInWithEmail(_emailController.text, _passwordController.text);
     } on firebase_auth.FirebaseAuthException catch (error) {
       _showMessage(_authErrorMessage(error));
     } catch (_) {
       _showMessage('Unable to sign in. Please try again.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    final email = _emailController.text.trim();
+    if (!email.contains('@')) {
+      _showMessage('Enter your email address first.');
+      return;
+    }
+    try {
+      await firebase_auth.FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      _showMessage('Password reset email sent. Check your inbox.');
+    } on firebase_auth.FirebaseAuthException catch (error) {
+      _showMessage(error.message ?? 'Unable to send reset email.');
+    } catch (_) {
+      _showMessage('Unable to send reset email. Please try again.');
     }
   }
 
@@ -50,60 +65,52 @@ class _LoginScreenState extends State<LoginScreen> {
     switch (error.code) {
       case 'invalid-credential':
       case 'user-not-found':
-      case 'wrong-password':
-        return 'Incorrect email or password.';
-      case 'invalid-email':
-        return 'Please enter a valid email address.';
-      default:
-        return error.message ?? 'Unable to sign in.';
+      case 'wrong-password': return 'Incorrect email or password.';
+      case 'invalid-email': return 'Please enter a valid email address.';
+      case 'too-many-requests': return 'Too many attempts. Please wait and try again.';
+      default: return error.message ?? 'Unable to sign in.';
     }
   }
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('FitTrack')),
-        body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('Welcome back', style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      validator: (value) => value == null || !value.contains('@') ? 'Enter a valid email.' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'Password'),
-                      validator: (value) => value == null || value.length < 6 ? 'Password must be at least 6 characters.' : null,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _signIn,
-                      child: Text(_isLoading ? 'Signing in...' : 'Sign in'),
-                    ),
-                    TextButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                              ),
-                      child: const Text('Create an account'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
+  @override Widget build(BuildContext context) => Scaffold(
+    backgroundColor: _bg,
+    body: SafeArea(child: SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 22, 24, 28),
+      child: Form(key: _formKey, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Align(alignment: Alignment.centerLeft, child: Container(width: 54, height: 54, decoration: BoxDecoration(color: _lime, borderRadius: BorderRadius.circular(18)), child: const Icon(Icons.bolt_rounded, size: 32, color: _ink))),
+        const SizedBox(height: 28),
+        const Text('Welcome back,', style: TextStyle(fontSize: 29, fontWeight: FontWeight.w800, color: _ink, height: 1.12)),
+        const Text('let’s get moving.', style: TextStyle(fontSize: 29, fontWeight: FontWeight.w800, color: _ink, height: 1.12)),
+        const SizedBox(height: 10),
+        const Text('Your fitness journey continues here.', style: TextStyle(fontSize: 14, color: _muted)),
+        const SizedBox(height: 26),
+        Container(height: 150, decoration: BoxDecoration(color: _ink, borderRadius: BorderRadius.circular(24)), clipBehavior: Clip.antiAlias, child: Stack(children: [
+          Positioned(right: -24, top: -44, child: Container(width: 180, height: 180, decoration: BoxDecoration(color: _lime.withValues(alpha: 0.16), shape: BoxShape.circle))),
+          Positioned(right: 14, bottom: -72, child: Container(width: 180, height: 180, decoration: BoxDecoration(border: Border.all(color: _lime.withValues(alpha: 0.4), width: 2), shape: BoxShape.circle))),
+          const Padding(padding: EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.directions_run_rounded, color: _lime, size: 32),
+            SizedBox(height: 9),
+            Text('Small steps.', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+            Text('Stronger every day.', style: TextStyle(color: Color(0xFFD5D9D2), fontSize: 13)),
+          ])),
+        ])),
+        const SizedBox(height: 26),
+        const Text('Email address', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink)),
+        const SizedBox(height: 7),
+        TextFormField(controller: _emailController, keyboardType: TextInputType.emailAddress, textInputAction: TextInputAction.next, decoration: const InputDecoration(hintText: 'you@example.com', prefixIcon: Icon(Icons.mail_outline_rounded)), validator: (v) => v == null || !v.contains('@') ? 'Enter a valid email address.' : null),
+        const SizedBox(height: 16),
+        const Text('Password', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink)),
+        const SizedBox(height: 7),
+        TextFormField(controller: _passwordController, obscureText: _hidePassword, textInputAction: TextInputAction.done, onFieldSubmitted: (_) => _signIn(), decoration: InputDecoration(hintText: 'Enter your password', prefixIcon: const Icon(Icons.lock_outline_rounded), suffixIcon: IconButton(onPressed: () => setState(() => _hidePassword = !_hidePassword), icon: Icon(_hidePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined))), validator: (v) => v == null || v.length < 6 ? 'Password must be at least 6 characters.' : null),
+        Align(alignment: Alignment.centerRight, child: TextButton(onPressed: _isLoading ? null : _resetPassword, child: const Text('Forgot password?'))),
+        const SizedBox(height: 8),
+        SizedBox(height: 54, child: ElevatedButton(onPressed: _isLoading ? null : _signIn, child: _isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: _ink)) : const Text('Sign in'))),
+        const SizedBox(height: 16),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Text("Don't have an account? ", style: TextStyle(fontSize: 13, color: _muted)),
+          TextButton(onPressed: _isLoading ? null : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterScreen())), child: const Text('Create account', style: TextStyle(fontWeight: FontWeight.w800))),
+        ]),
+      ])),
+    )),
+  );
 }
