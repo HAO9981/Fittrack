@@ -54,40 +54,105 @@ class InsightsScreen extends StatelessWidget {
   );
 }
 
-class _HistoryTab extends StatelessWidget {
+class _HistoryTab extends StatefulWidget {
   const _HistoryTab({required this.workouts, required this.meals});
   final List<Workout> workouts;
   final List<Meal> meals;
 
-  @override Widget build(BuildContext context) {
+  @override
+  State<_HistoryTab> createState() => _HistoryTabState();
+}
+
+class _HistoryTabState extends State<_HistoryTab> {
+  String _filter = 'All';
+
+  @override
+  Widget build(BuildContext context) {
+    final workoutEntries = widget.workouts.map((w) => _HistoryEntry(
+      date: w.date,
+      title: w.name,
+      subtitle: '${w.category} · ${w.duration} min',
+      icon: Icons.fitness_center_rounded,
+    )).toList();
+    final mealEntries = widget.meals.map((m) => _HistoryEntry(
+      date: m.date,
+      title: m.foodName,
+      subtitle: '${m.category} · ${m.calories} kcal',
+      icon: Icons.restaurant_rounded,
+    )).toList();
     final entries = <_HistoryEntry>[
-      ...workouts.map((w) => _HistoryEntry(date: w.date, title: w.name, subtitle: w.category + ' · ' + w.duration.toString() + ' min', icon: Icons.fitness_center_rounded)),
-      ...meals.map((m) => _HistoryEntry(date: m.date, title: m.foodName, subtitle: m.category + ' · ' + m.calories.toString() + ' kcal', icon: Icons.restaurant_rounded)),
+      if (_filter != 'Meals') ...workoutEntries,
+      if (_filter != 'Workouts') ...mealEntries,
     ]..sort((a, b) => b.date.compareTo(a.date));
-    if (entries.isEmpty) return const _InsightEmpty(icon: Icons.history_rounded, title: 'Your history starts here', message: 'Workouts and meals you record will show up in this timeline.');
+
+    final message = _filter == 'Workouts'
+        ? 'Workouts you record will appear here.'
+        : _filter == 'Meals'
+            ? 'Meals you record will appear here.'
+            : 'Workouts and meals you record will appear here.';
+
     return ListView(padding: const EdgeInsets.all(18), children: [
-      const Text('Recent activity', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _ink)),
+      const Text('History', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _ink)),
       const SizedBox(height: 5),
-      const Text('A combined timeline of your recorded workouts and meals.', style: TextStyle(fontSize: 12, color: _muted)),
+      const Text('Review your recorded activity by category.', style: TextStyle(fontSize: 12, color: _muted)),
+      const SizedBox(height: 14),
+      _HistoryFilter(selected: _filter, onChanged: (value) => setState(() => _filter = value)),
       const SizedBox(height: 16),
-      ...entries.take(100).map((entry) => Container(
-        margin: const EdgeInsets.only(bottom: 9),
-        padding: const EdgeInsets.all(13),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
-        child: Row(children: [
-          Container(width: 44, height: 44, decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(14)), child: Icon(entry.icon, color: _ink)),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(entry.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, color: _ink)),
-            const SizedBox(height: 4),
-            Text(entry.subtitle, style: const TextStyle(fontSize: 12, color: _muted)),
-            const SizedBox(height: 3),
-            Text(MaterialLocalizations.of(context).formatMediumDate(entry.date), style: const TextStyle(fontSize: 11, color: _muted)),
-          ])),
-        ]),
-      )),
+      if (entries.isEmpty)
+        _InsightEmpty(
+          icon: _filter == 'Meals' ? Icons.restaurant_rounded : Icons.history_rounded,
+          title: 'No records yet',
+          message: message,
+        )
+      else
+        ...entries.take(100).map((entry) => Container(
+          margin: const EdgeInsets.only(bottom: 9),
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+          child: Row(children: [
+            Container(width: 44, height: 44, decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(14)), child: Icon(entry.icon, color: _ink)),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(entry.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, color: _ink)),
+              const SizedBox(height: 4),
+              Text(entry.subtitle, style: const TextStyle(fontSize: 12, color: _muted)),
+              const SizedBox(height: 3),
+              Text(MaterialLocalizations.of(context).formatMediumDate(entry.date), style: const TextStyle(fontSize: 11, color: _muted)),
+            ])),
+          ]),
+        )),
     ]);
   }
+}
+
+class _HistoryFilter extends StatelessWidget {
+  const _HistoryFilter({required this.selected, required this.onChanged});
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  static const _options = ['All', 'Workouts', 'Meals'];
+
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Row(children: _options.map((option) {
+      final active = selected == option;
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: ChoiceChip(
+          label: Text(option),
+          selected: active,
+          onSelected: (_) => onChanged(option),
+          selectedColor: _lime,
+          backgroundColor: Colors.white,
+          side: BorderSide.none,
+          showCheckmark: false,
+          shape: const StadiumBorder(),
+          labelStyle: TextStyle(color: _ink, fontSize: 12, fontWeight: active ? FontWeight.w700 : FontWeight.w500),
+        ),
+      );
+    }).toList()),
+  );
 }
 
 class _HistoryEntry {
