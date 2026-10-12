@@ -10,6 +10,7 @@ import '../../widgets/app_empty_state.dart';
 import '../workout/add_workout_screen.dart';
 import '../nutrition/add_meal_screen.dart';
 import '../insights/insights_screen.dart';
+import '../ai/ai_assistant_screen.dart';
 
 const lime = Color(0xFF84E221), ink = Color(0xFF232824), muted = Color(0xFF858C83), bg = Color(0xFFF6F7F4);
 
@@ -75,6 +76,44 @@ class _DashboardContent extends StatelessWidget {
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.duration).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
       const SizedBox(height: 10), _Chart(workouts: weekly, today: today),
       const SizedBox(height: 22), const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 10),
+      const SizedBox(height: 12),
+      InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
+        ),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFE4EBD9)),
+          ),
+          child: Row(children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF7D9),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.auto_awesome_rounded, color: ink),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Ask FitTrack AI', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
+                SizedBox(height: 4),
+                Text('Get workout and nutrition advice', style: TextStyle(fontSize: 11, color: muted)),
+              ],
+            )),
+            const Icon(Icons.chevron_right_rounded, color: muted),
+          ]),
+        ),
+      ),
+      const SizedBox(height: 18),
+      const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 10),
       Row(children: [
         Expanded(child: _Action(icon: Icons.directions_run_rounded, label: 'Add Workout', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddWorkoutScreen())))),
         const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Meal', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen())))),
