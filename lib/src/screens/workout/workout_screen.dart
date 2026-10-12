@@ -83,8 +83,19 @@ class _WorkoutCard extends StatelessWidget {
   final Workout workout;
   Future<void> _delete(BuildContext context) async {
     final yes = await showDialog<bool>(context: context, builder: (d) => AlertDialog(title: const Text('Delete workout?'), content: Text('Delete "' + workout.name + '" permanently?'), actions: [
-      TextButton(onPressed: () => Navigator.of(d).pop(false), child: const Text('Cancel')),
-      FilledButton(onPressed: () => Navigator.of(d).pop(true), child: const Text('Delete')),
+      TextButton(
+        style: TextButton.styleFrom(foregroundColor: const Color(0xFF5F665D)),
+        onPressed: () => Navigator.of(d).pop(false),
+        child: const Text('Cancel'),
+      ),
+      FilledButton(
+        style: FilledButton.styleFrom(
+          backgroundColor: const Color(0xFFB23B3B),
+          foregroundColor: Colors.white,
+        ),
+        onPressed: () => Navigator.of(d).pop(true),
+        child: const Text('Delete'),
+      ),
     ]));
     if (yes != true || !context.mounted) return;
     try {
