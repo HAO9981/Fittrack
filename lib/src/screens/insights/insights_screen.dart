@@ -129,6 +129,8 @@ class _ProgressTab extends StatelessWidget {
       const SizedBox(height: 18),
       const _WeightProgressCard(),
       const SizedBox(height: 12),
+      const _TargetWeightCard(),
+      const SizedBox(height: 12),
       Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Daily workout minutes', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: _ink)),
         const SizedBox(height: 20),
@@ -302,6 +304,66 @@ class _WeightProgressCard extends StatelessWidget {
               icon: const Icon(Icons.add_rounded),
               label: const Text('Log weight'),
             ),
+          ]),
+        );
+      },
+    );
+  }
+}
+
+class _TargetWeightCard extends StatelessWidget {
+  const _TargetWeightCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const SizedBox.shrink();
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+      builder: (context, snapshot) {
+        final data = snapshot.data?.data();
+        final current = (data?['weightKg'] as num?)?.toDouble();
+        final target = (data?['targetWeightKg'] as num?)?.toDouble();
+        if (target == null || target <= 0) {
+          return Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+            child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Target weight', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+              SizedBox(height: 6),
+              Text('Set a target weight in Profile to see how far you are from your goal.', style: TextStyle(fontSize: 12, height: 1.5, color: _muted)),
+            ]),
+          );
+        }
+        final hasCurrent = current != null && current > 0;
+        final difference = hasCurrent ? (current - target).abs() : null;
+        final start = (data?['startingWeightKg'] as num?)?.toDouble();
+        final baseline = start ?? current;
+        final totalToTarget = baseline != null ? (baseline - target).abs() : null;
+        final progress = hasCurrent && totalToTarget != null && totalToTarget > 0
+            ? ((baseline! - current!).abs() / totalToTarget).clamp(0.0, 1.0).toDouble()
+            : (hasCurrent && difference! < 0.05 ? 1.0 : 0.0);
+        final reached = difference != null && difference < 0.05;
+        return Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Target weight', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+            const SizedBox(height: 12),
+            Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Current', style: TextStyle(fontSize: 11, color: _muted)),
+                Text(hasCurrent ? '${current.toStringAsFixed(1)} kg' : 'Not set', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: _ink)),
+              ])),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Goal', style: TextStyle(fontSize: 11, color: _muted)),
+                Text('${target.toStringAsFixed(1)} kg', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: _ink)),
+              ])),
+            ]),
+            const SizedBox(height: 12),
+            ClipRRect(borderRadius: BorderRadius.circular(8), child: LinearProgressIndicator(value: progress, minHeight: 9, backgroundColor: const Color(0xFFE7EAE4), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
+            const SizedBox(height: 8),
+            Text(!hasCurrent ? 'Log your current weight to begin.' : reached ? 'Target reached — great work!' : '${difference!.toStringAsFixed(1)} kg from your target', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _ink)),
           ]),
         );
       },
