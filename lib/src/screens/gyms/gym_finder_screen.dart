@@ -51,6 +51,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
   List<_GymPlace> _places = [];
   String? _selectedId;
   final Set<String> _savedIds = {};
+  final Set<String> _savingIds = {};
   static const _categories = ['All', 'Gym', 'Yoga', 'Swimming', 'Sports', 'Saved'];
 
   List<String> get _includedPlaceTypes => switch (_category) {
@@ -113,6 +114,12 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign in to save places.')));
       return;
     }
+    if (place.id.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('This place has no saveable Google Place ID.')));
+      return;
+    }
+    if (_savingIds.contains(place.id)) return;
+    setState(() => _savingIds.add(place.id));
     final doc = collection.doc(place.id);
     try {
       if (_savedIds.contains(place.id)) {
@@ -139,8 +146,15 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
         setState(() => _savedIds.add(place.id));
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Place saved.')));
       }
-    } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to update saved places.')));
+    } catch (error) {
+      if (mounted) {
+        final message = error is FirebaseException && error.code == 'permission-denied'
+            ? 'Saving was blocked by Firestore rules. Check access to users/{uid}/savedPlaces.'
+            : 'Unable to save this place (${error is FirebaseException ? error.code : error.runtimeType}).';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (mounted) setState(() => _savingIds.remove(place.id));
     }
   }
 
@@ -332,11 +346,13 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
           const SizedBox(width: 5),
           IconButton(
             tooltip: _savedIds.contains(place.id) ? 'Remove saved place' : 'Save place',
-            onPressed: () => _toggleSaved(place),
-            icon: Icon(
-              _savedIds.contains(place.id) ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-              color: _savedIds.contains(place.id) ? _ink : _muted,
-            ),
+            onPressed: _savingIds.contains(place.id) ? null : () => _toggleSaved(place),
+            icon: _savingIds.contains(place.id)
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : Icon(
+                    _savedIds.contains(place.id) ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                    color: _savedIds.contains(place.id) ? _ink : _muted,
+                  ),
           ),
         ]),
       )),
