@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/meal.dart';
 import '../../models/workout.dart';
@@ -125,6 +127,8 @@ class _ProgressTab extends StatelessWidget {
       const SizedBox(height: 10),
       _ProgressStat(title: 'Food logged', value: totalCalories.toString(), unit: 'kcal across logged meals', icon: Icons.restaurant_rounded),
       const SizedBox(height: 18),
+      const _WeightProgressCard(),
+      const SizedBox(height: 12),
       Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Daily workout minutes', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: _ink)),
         const SizedBox(height: 20),
@@ -145,6 +149,93 @@ class _ProgressTab extends StatelessWidget {
       const Text('Keep logging consistently to build a more useful progress picture.', style: TextStyle(fontSize: 12, color: _muted, height: 1.5)),
     ]);
   }
+}
+
+
+class _WeightProgressCard extends StatelessWidget {
+  const _WeightProgressCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const _WeightCardMessage(message: 'Sign in to track your weight history.');
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('users').doc(user.uid).collection('weightEntries').orderBy('recordedAt').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return const _WeightCardMessage(message: 'Weight history is temporarily unavailable.');
+        final entries = (snapshot.data?.docs ?? []).map((doc) {
+          final weight = (doc.data()['weightKg'] as num?)?.toDouble();
+          final stamp = doc.data()['recordedAt'];
+          final date = stamp is Timestamp ? stamp.toDate() : null;
+          if (weight == null || date == null) return null;
+          return (weight: weight, date: date);
+        }).whereType<({double weight, DateTime date})>().toList();
+        if (entries.isEmpty) {
+          return const _WeightCardMessage(message: 'Record your weight in Profile and save it. Each new weight will appear here so you can track changes over time.');
+        }
+        final first = entries.first.weight;
+        final latest = entries.last.weight;
+        final change = latest - first;
+        final changeLabel = change.abs() < 0.05 ? 'No change yet' : '${change < 0 ? 'Down' : 'Up'} ${change.abs().toStringAsFixed(1)} kg since first entry';
+        final chartEntries = entries.length > 12 ? entries.sublist(entries.length - 12) : entries;
+        final minWeight = chartEntries.map((e) => e.weight).reduce((a, b) => a < b ? a : b);
+        final maxWeight = chartEntries.map((e) => e.weight).reduce((a, b) => a > b ? a : b);
+        final range = maxWeight - minWeight;
+        return Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Weight progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+            const SizedBox(height: 5),
+            const Text('Based on weight entries saved from your Profile.', style: TextStyle(fontSize: 11, color: _muted)),
+            const SizedBox(height: 14),
+            Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Current', style: TextStyle(fontSize: 11, color: _muted)),
+                Text('${latest.toStringAsFixed(1)} kg', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800, color: _ink)),
+              ])),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Starting', style: TextStyle(fontSize: 11, color: _muted)),
+                Text('${first.toStringAsFixed(1)} kg', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _ink)),
+              ])),
+            ]),
+            const SizedBox(height: 12),
+            Container(width: double.infinity, padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: const Color(0xFFF0F3EC), borderRadius: BorderRadius.circular(14)),
+              child: Text(changeLabel, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink))),
+            if (chartEntries.length > 1) ...[
+              const SizedBox(height: 16),
+              const Text('Recent weight history (kg)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink)),
+              const SizedBox(height: 12),
+              SizedBox(height: 88, child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: chartEntries.map((entry) {
+                final height = range == 0 ? 36.0 : 24 + ((entry.weight - minWeight) / range * 48);
+                return Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 3), child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Text(entry.weight.toStringAsFixed(1), style: const TextStyle(fontSize: 8, color: _muted)),
+                  const SizedBox(height: 4),
+                  Container(height: height.toDouble(), decoration: BoxDecoration(color: const Color(0xFF9AA197), borderRadius: BorderRadius.circular(6))),
+                ])));
+              }).toList())),
+            ],
+          ]),
+        );
+      },
+    );
+  }
+}
+
+class _WeightCardMessage extends StatelessWidget {
+  const _WeightCardMessage({required this.message});
+  final String message;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Weight progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+      const SizedBox(height: 8),
+      Text(message, style: const TextStyle(fontSize: 12, height: 1.5, color: _muted)),
+    ]),
+  );
 }
 
 class _ProgressStat extends StatelessWidget {
