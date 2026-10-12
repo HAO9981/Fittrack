@@ -32,7 +32,7 @@ class DashboardScreen extends StatelessWidget {
         builder: (context, ms) {
           if (ws.connectionState == ConnectionState.waiting || ms.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: lime));
           if (ws.hasError || ms.hasError) return const AppEmptyState(icon: Icons.cloud_off_outlined, title: 'Dashboard unavailable', message: 'Your latest activity could not be loaded.');
-          return _DashboardContent(name: name, workouts: ws.data ?? const [], meals: ms.data ?? const []);
+          return _DashboardContent(name: name, profile: profileSnapshot.data, workouts: ws.data ?? const [], meals: ms.data ?? const []);
         },
       ),
     )));
@@ -42,8 +42,9 @@ class DashboardScreen extends StatelessWidget {
 }
 
 class _DashboardContent extends StatelessWidget {
-  const _DashboardContent({required this.name, required this.workouts, required this.meals});
+  const _DashboardContent({required this.name, required this.profile, required this.workouts, required this.meals});
   final String name;
+  final UserProfile? profile;
   final List<Workout> workouts;
   final List<Meal> meals;
   @override
@@ -65,6 +66,10 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Today's Activity", style: TextStyle(color: Colors.white70, fontSize: 12)), const SizedBox(height: 8), Text('$mins min', style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)), Text('$cals kcal logged', style: const TextStyle(color: Colors.white)), const SizedBox(height: 8), Text(todaysWorkouts.length.toString() + ' workout(s) completed', style: const TextStyle(color: Color(0xFFB8C5B1), fontSize: 11))]))
       ])),
       const SizedBox(height: 12),
+      if (profile?.weightKg != null || profile?.targetWeightKg != null) ...[
+        _WeightGoalOverview(currentWeight: profile?.weightKg, targetWeight: profile?.targetWeightKg),
+        const SizedBox(height: 12),
+      ],
       Row(children: [Expanded(child: _Stat(icon: Icons.local_fire_department_rounded, color: Colors.orange, value: '$cals', label: 'Calories')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.access_time_rounded, color: ink, value: '$mins', label: 'Mins')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.fitness_center_rounded, color: const Color(0xFF657B50), value: todaysWorkouts.length.toString(), label: 'Workouts'))]),
       const SizedBox(height: 22),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.duration).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
@@ -100,6 +105,41 @@ class _DashboardContent extends StatelessWidget {
       ),
       TextButton.icon(onPressed: () => FirebaseAuthService.instance.signOut(), icon: const Icon(Icons.logout), label: const Text('Sign out')),
     ]);
+  }
+}
+
+class _WeightGoalOverview extends StatelessWidget {
+  const _WeightGoalOverview({required this.currentWeight, required this.targetWeight});
+  final double? currentWeight;
+  final double? targetWeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCurrent = currentWeight != null && currentWeight! > 0;
+    final hasTarget = targetWeight != null && targetWeight! > 0;
+    final difference = hasCurrent && hasTarget ? (currentWeight! - targetWeight!).abs() : null;
+    final reached = difference != null && difference < 0.05;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: Row(children: [
+        Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFEAF7D9), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.monitor_weight_outlined, color: ink)),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Weight goal', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
+          const SizedBox(height: 4),
+          Text(
+            !hasCurrent ? 'Add your current weight in Profile' : !hasTarget ? 'Set a target weight in Profile' : reached ? 'Target reached — great work!' : '${currentWeight!.toStringAsFixed(1)} kg now · ${targetWeight!.toStringAsFixed(1)} kg target',
+            style: const TextStyle(fontSize: 11, color: muted),
+          ),
+          if (difference != null && !reached) ...[
+            const SizedBox(height: 5),
+            Text('${difference.toStringAsFixed(1)} kg to your target', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: ink)),
+          ],
+        ])),
+        const Icon(Icons.flag_outlined, color: Color(0xFF657B50)),
+      ]),
+    );
   }
 }
 
