@@ -28,7 +28,7 @@ class App extends StatelessWidget {
         inputDecorationTheme: InputDecorationTheme(
           filled: true, fillColor: fitTrackSurface, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: fitTrackBorder)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE8EBE5))),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: fitTrackBorder)),
           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: fitTrackLime, width: 1.5)),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(
