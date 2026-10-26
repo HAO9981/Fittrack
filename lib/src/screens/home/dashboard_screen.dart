@@ -58,9 +58,30 @@ class _DashboardContent extends StatelessWidget {
     final cals = todaysMeals.fold<int>(0, (s, m) => s + m.calories);
     final greeting = now.hour < 12 ? 'Good morning,' : now.hour < 18 ? 'Good afternoon,' : 'Good evening,';
     return ListView(padding: const EdgeInsets.fromLTRB(18, 8, 18, 22), children: [
-      Row(children: [const Expanded(child: Text('FitTrack', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink))), IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_rounded)), CircleAvatar(backgroundColor: const Color(0xFF263522), child: Text(name[0].toUpperCase()))]),
-      const SizedBox(height: 10), Text(greeting, style: const TextStyle(color: muted)), Text('$name!', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800, color: ink)),
-      const SizedBox(height: 4), Text(MaterialLocalizations.of(context).formatFullDate(now), style: const TextStyle(fontSize: 12, color: muted)),
+      Row(children: [
+        const Expanded(child: Text('FitTrack', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.4))),
+        IconButton(
+          tooltip: 'Notifications',
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You’re all caught up!'))),
+          icon: const Icon(Icons.notifications_none_rounded, color: ink),
+        ),
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF263522),
+            border: Border.all(color: lime.withValues(alpha: 0.28)),
+          ),
+          child: Center(child: Text(name[0].toUpperCase(), style: const TextStyle(color: lime, fontSize: 16, fontWeight: FontWeight.w800))),
+        ),
+      ]),
+      const SizedBox(height: 14),
+      Text(greeting, style: const TextStyle(color: muted, fontSize: 13)),
+      const SizedBox(height: 2),
+      Text('$name!', style: const TextStyle(fontSize: 29, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
+      const SizedBox(height: 5),
+      Text(MaterialLocalizations.of(context).formatFullDate(now), style: const TextStyle(fontSize: 12, color: muted)),
       const SizedBox(height: 18),
       Container(
         padding: const EdgeInsets.all(18),
@@ -136,9 +157,9 @@ class _DashboardContent extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Container(
           padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)),
+          decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: border.withValues(alpha: 0.55))),
           child: Row(children: [
-            Container(width: 42, height: 42, decoration: BoxDecoration(color: Color(0xFF25351D), borderRadius: BorderRadius.all(Radius.circular(14))), child: Icon(Icons.insights_rounded, color: ink)),
+            Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.insights_rounded, color: lime)),
             SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('History, Progress & Tips', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
