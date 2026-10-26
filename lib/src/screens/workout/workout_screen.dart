@@ -57,7 +57,31 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             Material(color: _lime, borderRadius: BorderRadius.circular(16), child: InkWell(onTap: _add, borderRadius: BorderRadius.circular(16), child: const SizedBox(width: 46, height: 46, child: Icon(Icons.add_rounded, color: Color(0xFF080D0B), size: 27)))),
           ]),
           const SizedBox(height: 14),
-          Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(13)), child: Row(children: [Expanded(child: _topTab('My Workouts', !_showExercises, () => setState(() => _showExercises = false))), Expanded(child: _topTab('Exercises', _showExercises, () => setState(() => _showExercises = true))])),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF141B17),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _topTab(
+                    'My Workouts',
+                    !_showExercises,
+                    () => setState(() => _showExercises = false),
+                  ),
+                ),
+                Expanded(
+                  child: _topTab(
+                    'Exercises',
+                    _showExercises,
+                    () => setState(() => _showExercises = true),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _searchController,
