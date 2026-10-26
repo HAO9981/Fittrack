@@ -6,10 +6,10 @@ import '../../widgets/app_empty_state.dart';
 import 'add_workout_screen.dart';
 import 'edit_workout_screen.dart';
 
-const _lime = Color(0xFF84E221);
-const _ink = Color(0xFF232824);
-const _muted = Color(0xFF858C83);
-const _bg = Color(0xFFF6F7F4);
+const _lime = Color(0xFF9BFF3D);
+const _ink = Color(0xFFF4F7F1);
+const _muted = Color(0xFF9AA69C);
+const _bg = Color(0xFF080D0B);
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -45,7 +45,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           const SizedBox(height: 17),
           SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: _filters.map((f) {
             final selected = _filter == f;
-            return Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(f), selected: selected, onSelected: (_) => setState(() => _filter = f), backgroundColor: const Color(0xFFE9ECE6), selectedColor: _lime, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(), labelStyle: TextStyle(fontSize: 12, color: _ink, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)));
+            return Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(f), selected: selected, onSelected: (_) => setState(() => _filter = f), backgroundColor: const Color(0xFF27332B), selectedColor: _lime, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(), labelStyle: TextStyle(fontSize: 12, color: _ink, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)));
           }).toList())),
           const SizedBox(height: 16),
           Row(children: [
@@ -72,8 +72,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 class _WorkoutStat extends StatelessWidget {
   const _WorkoutStat({required this.icon, required this.label, required this.value});
   final IconData icon; final String label, value;
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)), child: Row(children: [
-    Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(13)), child: Icon(icon, color: _ink, size: 20)),
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(20)), child: Row(children: [
+    Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(13)), child: Icon(icon, color: _ink, size: 20)),
     const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: _ink)), Text(label, style: const TextStyle(fontSize: 11, color: _muted))])),
   ]));
 }
@@ -105,8 +105,8 @@ class _WorkoutCard extends StatelessWidget {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to delete workout. Please try again.')));
     }
   }
-  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(21)), child: Row(children: [
-    Container(width: 52, height: 52, decoration: BoxDecoration(color: const Color(0xFFF0F3EC), borderRadius: BorderRadius.circular(17)), child: Icon(_workoutIcon(workout.category), color: _ink, size: 25)),
+  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(21)), child: Row(children: [
+    Container(width: 52, height: 52, decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(17)), child: Icon(_workoutIcon(workout.category), color: _ink, size: 25)),
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(workout.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: _ink)),
