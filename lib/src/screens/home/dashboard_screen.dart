@@ -114,9 +114,9 @@ class _DashboardContent extends StatelessWidget {
       const SizedBox(height: 18),
       const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 10),
       Row(children: [
-        Expanded(child: _Action(icon: Icons.directions_run_rounded, label: 'Add Workout', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddWorkoutScreen())))),
-        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Meal', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen())))),
-        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.camera_alt_outlined, label: 'Analyze Food', onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AI Food Analysis is not connected yet.'))))),
+        Expanded(child: _Action(icon: Icons.fitness_center_rounded, label: 'Log Workout', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddWorkoutScreen())))),
+        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Food', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen())))),
+        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.auto_awesome_rounded, label: 'FitTrack AI', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AiAssistantScreen())))),
       ]),
       const SizedBox(height: 22), const Text('Recent Workouts', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 8),
       if (workouts.isEmpty) const _Empty(text: 'Your workouts will appear here.') else ...workouts.take(3).map((w) => _Recent(icon: Icons.fitness_center_rounded, title: w.name, subtitle: w.category + ' • ' + w.duration.toString() + ' mins')),
@@ -204,13 +204,13 @@ class _Chart extends StatelessWidget {
 class _Action extends StatelessWidget {
   const _Action({required this.icon, required this.label, required this.onTap});
   final IconData icon; final String label; final VoidCallback onTap;
-  @override Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18), child: Container(height: 86, padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 20, color: ink)), const SizedBox(height: 6), Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: ink))])));
+  @override Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18), child: Container(height: 86, padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 20, color: lime)), const SizedBox(height: 6), Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: ink))])));
 }
 
 class _Recent extends StatelessWidget {
   const _Recent({required this.icon, required this.title, required this.subtitle});
   final IconData icon; final String title, subtitle;
-  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(13), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Row(children: [Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFF0F3EC), borderRadius: BorderRadius.circular(14)), child: Icon(icon, color: ink)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.w700, color: ink)), Text(subtitle, style: const TextStyle(fontSize: 12, color: muted))]))]));
+  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(13), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Row(children: [Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(14)), child: Icon(icon, color: lime)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.w700, color: ink)), Text(subtitle, style: const TextStyle(fontSize: 12, color: muted))]))]));
 }
 
 class _Empty extends StatelessWidget {
