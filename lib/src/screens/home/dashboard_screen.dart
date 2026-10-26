@@ -188,9 +188,9 @@ class _WeightGoalOverview extends StatelessWidget {
     final reached = difference != null && difference < 0.05;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: border.withValues(alpha: 0.55))),
       child: Row(children: [
-        Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.monitor_weight_outlined, color: ink)),
+        Container(width: 44, height: 44, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.monitor_weight_outlined, color: lime)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Weight goal', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
@@ -204,7 +204,7 @@ class _WeightGoalOverview extends StatelessWidget {
             Text('${difference.toStringAsFixed(1)} kg to your target', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: ink)),
           ],
         ])),
-        const Icon(Icons.flag_outlined, color: Color(0xFF657B50)),
+        Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.flag_outlined, color: lime, size: 18)),
       ]),
     );
   }
@@ -308,7 +308,7 @@ class _Chart extends StatelessWidget {
 class _Action extends StatelessWidget {
   const _Action({required this.icon, required this.label, required this.onTap});
   final IconData icon; final String label; final VoidCallback onTap;
-  @override Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18), child: Container(height: 86, padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 20, color: lime)), const SizedBox(height: 6), Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: ink))])));
+  @override Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18), child: Container(height: 92, padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: border.withValues(alpha: 0.55))), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Container(padding: const EdgeInsets.all(9), decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 20, color: lime)), const SizedBox(height: 7), Text(label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: ink))])));
 }
 
 IconData _workoutIcon(String category) {
