@@ -50,12 +50,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           return matchesCategory && matchesSearch;
         }).toList();
         final minutes = all.fold<int>(0, (sum, w) => sum + w.duration);
-        return ListView(padding: const EdgeInsets.fromLTRB(18, 12, 18, 100), children: [
+        return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 100), children: [
           Row(children: [
-            const Expanded(child: Text('Workouts', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink))),
+            const Expanded(child: Text('Workouts', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _ink))),
             Material(color: _lime, borderRadius: BorderRadius.circular(17), child: InkWell(onTap: _add, borderRadius: BorderRadius.circular(17), child: const SizedBox(width: 48, height: 48, child: Icon(Icons.add_rounded, color: _ink, size: 28)))),
           ]),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           TextField(
             controller: _searchController,
             onChanged: (value) => setState(() => _searchQuery = value),
@@ -81,13 +81,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             final selected = _filter == f;
             return Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(f), selected: selected, onSelected: (_) => setState(() => _filter = f), backgroundColor: const Color(0xFF27332B), selectedColor: _lime, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(), labelStyle: TextStyle(fontSize: 12, color: _ink, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)));
           }).toList())),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Row(children: [
             Expanded(child: _WorkoutStat(icon: Icons.fitness_center_rounded, label: 'Workouts', value: all.length.toString())),
             const SizedBox(width: 10),
             Expanded(child: _WorkoutStat(icon: Icons.schedule_rounded, label: 'Active minutes', value: minutes.toString())),
           ]),
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             const Text('Your activity', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: _ink)),
             Text(filtered.length.toString() + ' workouts', style: const TextStyle(fontSize: 12, color: _muted)),
@@ -106,8 +106,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 class _WorkoutStat extends StatelessWidget {
   const _WorkoutStat({required this.icon, required this.label, required this.value});
   final IconData icon; final String label, value;
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(20)), child: Row(children: [
-    Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(13)), child: Icon(icon, color: _ink, size: 20)),
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFF27332B))), child: Row(children: [
+    Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(13)), child: Icon(icon, color: _lime, size: 20)),
     const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: _ink)), Text(label, style: const TextStyle(fontSize: 11, color: _muted))])),
   ]));
 }
@@ -139,8 +139,8 @@ class _WorkoutCard extends StatelessWidget {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to delete workout. Please try again.')));
     }
   }
-  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(21)), child: Row(children: [
-    Container(width: 52, height: 52, decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(17)), child: Icon(_workoutIcon(workout.category), color: _ink, size: 25)),
+  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFF27332B))), child: Row(children: [
+    Container(width: 52, height: 52, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(15)), child: Icon(_workoutIcon(workout.category), color: _lime, size: 25)),
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(workout.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: _ink)),
