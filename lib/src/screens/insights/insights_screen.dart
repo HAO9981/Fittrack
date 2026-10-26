@@ -7,10 +7,10 @@ import '../../models/workout.dart';
 import '../../services/nutrition_service.dart';
 import '../../services/workout_service.dart';
 
-const _lime = Color(0xFF84E221);
-const _ink = Color(0xFF232824);
-const _muted = Color(0xFF858C83);
-const _bg = Color(0xFFF6F7F4);
+const _lime = Color(0xFF9BFF3D);
+const _ink = Color(0xFFF4F7F1);
+const _muted = Color(0xFF9AA69C);
+const _bg = Color(0xFF080D0B);
 
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
@@ -108,9 +108,9 @@ class _HistoryTabState extends State<_HistoryTab> {
         ...entries.take(100).map((entry) => Container(
           margin: const EdgeInsets.only(bottom: 9),
           padding: const EdgeInsets.all(13),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+          decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(18)),
           child: Row(children: [
-            Container(width: 44, height: 44, decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(14)), child: Icon(entry.icon, color: _ink)),
+            Container(width: 44, height: 44, decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(14)), child: Icon(entry.icon, color: _ink)),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(entry.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, color: _ink)),
@@ -144,7 +144,7 @@ class _HistoryFilter extends StatelessWidget {
           selected: active,
           onSelected: (_) => onChanged(option),
           selectedColor: _lime,
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFF141B17),
           side: BorderSide.none,
           showCheckmark: false,
           shape: const StadiumBorder(),
@@ -196,7 +196,7 @@ class _ProgressTab extends StatelessWidget {
       const SizedBox(height: 12),
       const _TargetWeightCard(),
       const SizedBox(height: 12),
-      Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Daily workout minutes', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: _ink)),
         const SizedBox(height: 20),
         SizedBox(height: 125, child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: List.generate(7, (i) {
@@ -206,7 +206,7 @@ class _ProgressTab extends StatelessWidget {
           return Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
             Text(minutes[i].toString(), style: const TextStyle(fontSize: 9, color: _muted)),
             const SizedBox(height: 5),
-            Container(height: height, width: 15, decoration: BoxDecoration(color: minutes[i] > 0 ? _lime : const Color(0xFFE7EAE4), borderRadius: BorderRadius.circular(8))),
+            Container(height: height, width: 15, decoration: BoxDecoration(color: minutes[i] > 0 ? _lime : const Color(0xFF27332B), borderRadius: BorderRadius.circular(8))),
             const SizedBox(height: 7),
             Text(labels[day.weekday - 1], style: TextStyle(fontSize: 11, fontWeight: active ? FontWeight.w800 : FontWeight.w400, color: active ? _ink : _muted)),
           ]));
@@ -310,7 +310,7 @@ class _WeightProgressCard extends StatelessWidget {
         if (entries.isEmpty) {
           return Container(
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+            decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Weight progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
               const SizedBox(height: 7),
@@ -335,7 +335,7 @@ class _WeightProgressCard extends StatelessWidget {
         final range = maxWeight - minWeight;
         return Container(
           padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+          decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('Weight progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
             const SizedBox(height: 5),
@@ -353,7 +353,7 @@ class _WeightProgressCard extends StatelessWidget {
             ]),
             const SizedBox(height: 12),
             Container(width: double.infinity, padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: const Color(0xFFF0F3EC), borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(14)),
               child: Text(changeLabel, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink))),
             if (chartEntries.length > 1) ...[
               const SizedBox(height: 16),
@@ -398,7 +398,7 @@ class _TargetWeightCard extends StatelessWidget {
         if (target == null || target <= 0) {
           return Container(
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+            decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
             child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Target weight', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
               SizedBox(height: 6),
@@ -417,7 +417,7 @@ class _TargetWeightCard extends StatelessWidget {
         final reached = difference != null && difference < 0.05;
         return Container(
           padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+          decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('Target weight', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
             const SizedBox(height: 12),
@@ -432,7 +432,7 @@ class _TargetWeightCard extends StatelessWidget {
               ])),
             ]),
             const SizedBox(height: 12),
-            ClipRRect(borderRadius: BorderRadius.circular(8), child: LinearProgressIndicator(value: progress, minHeight: 9, backgroundColor: const Color(0xFFE7EAE4), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
+            ClipRRect(borderRadius: BorderRadius.circular(8), child: LinearProgressIndicator(value: progress, minHeight: 9, backgroundColor: const Color(0xFF27332B), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
             const SizedBox(height: 8),
             Text(!hasCurrent ? 'Log your current weight to begin.' : reached ? 'Target reached — great work!' : '${difference!.toStringAsFixed(1)} kg from your target', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _ink)),
           ]),
@@ -448,7 +448,7 @@ class _WeightCardMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+    decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text('Weight progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
       const SizedBox(height: 8),
@@ -461,8 +461,8 @@ class _ProgressStat extends StatelessWidget {
   const _ProgressStat({required this.title, required this.value, required this.unit, required this.icon});
   final String title, value, unit;
   final IconData icon;
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(19)), child: Row(children: [
-    Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 19, color: _ink)),
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(19)), child: Row(children: [
+    Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 19, color: _ink)),
     const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(title, style: const TextStyle(fontSize: 11, color: _muted)),
       const SizedBox(height: 3), Text(value, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: _ink)),
@@ -501,15 +501,15 @@ class _RecommendationsTab extends StatelessWidget {
       const SizedBox(height: 5),
       const Text('Simple suggestions based on your logged activity — not medical advice.', style: TextStyle(fontSize: 12, color: _muted)),
       const SizedBox(height: 16),
-      ...cards.map((card) => Container(margin: const EdgeInsets.only(bottom: 11), padding: const EdgeInsets.all(17), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(21)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      ...cards.map((card) => Container(margin: const EdgeInsets.only(bottom: 11), padding: const EdgeInsets.all(17), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(21)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFEAF7D9), borderRadius: BorderRadius.circular(14)), child: Icon(card.icon, color: _ink)),
+          Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(14)), child: Icon(card.icon, color: _ink)),
           const SizedBox(width: 11), Expanded(child: Text(card.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: _ink))),
         ]),
         const SizedBox(height: 12),
         Text(card.text, style: const TextStyle(fontSize: 12, height: 1.5, color: _muted)),
         const SizedBox(height: 12),
-        Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5), decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(9)), child: Text(card.tag, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: _ink, letterSpacing: .6))),
+        Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5), decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(9)), child: Text(card.tag, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: _ink, letterSpacing: .6))),
       ]))),
     ]);
   }
@@ -526,7 +526,7 @@ class _InsightEmpty extends StatelessWidget {
   final IconData icon;
   final String title, message;
   @override Widget build(BuildContext context) => Center(child: Padding(padding: const EdgeInsets.all(28), child: Column(mainAxisSize: MainAxisSize.min, children: [
-    Container(width: 66, height: 66, decoration: BoxDecoration(color: const Color(0xFFEAF7D9), borderRadius: BorderRadius.circular(22)), child: Icon(icon, size: 31, color: _ink)),
+    Container(width: 66, height: 66, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(22)), child: Icon(icon, size: 31, color: _ink)),
     const SizedBox(height: 14), Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: _ink), textAlign: TextAlign.center),
     const SizedBox(height: 7), Text(message, style: const TextStyle(fontSize: 12, height: 1.5, color: _muted), textAlign: TextAlign.center),
   ])));
