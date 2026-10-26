@@ -226,15 +226,15 @@ class _SocialSignInButton extends StatelessWidget {
         border: label == 'Apple' ? Border.all(color: const Color(0xFF465047), width: 1) : null,
       ),
       child: Padding(
-        padding: EdgeInsets.all(label == 'Google' ? 10 : 11),
+        padding: EdgeInsets.all(label == 'Google' ? 8 : label == 'Apple' ? 11 : 5),
         child: Image.network(
           label == 'Google'
-              ? 'https://cdn.simpleicons.org/google/4285F4'
+              ? 'https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png'
               : label == 'Apple'
-                  ? 'https://cdn.simpleicons.org/apple/000000'
-                  : 'https://cdn.simpleicons.org/facebook/FFFFFF',
-          width: 22,
-          height: 22,
+                  ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/256px-Apple_logo_black.svg.png'
+                  : 'https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png',
+          width: 26,
+          height: 26,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) => Icon(
             icon,
