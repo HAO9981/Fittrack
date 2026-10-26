@@ -54,7 +54,7 @@ class _DashboardContent extends StatelessWidget {
     final todaysWorkouts = workouts.where((w) => DateUtils.isSameDay(w.date, today)).toList();
     final todaysMeals = meals.where((m) => DateUtils.isSameDay(m.date, today)).toList();
     final weekly = workouts.where((w) => !DateUtils.dateOnly(w.date).isBefore(today.subtract(const Duration(days: 6)))).toList();
-    final mins = todaysWorkouts.fold<int>(0, (s, w) => s + w.duration);
+    final mins = todaysWorkouts.fold<int>(0, (s, w) => s + w.durationInMinutes);
     final cals = todaysMeals.fold<int>(0, (s, m) => s + m.calories);
     final greeting = now.hour < 12 ? 'Good morning,' : now.hour < 18 ? 'Good afternoon,' : 'Good evening,';
     return ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 18), children: [
@@ -102,7 +102,7 @@ class _DashboardContent extends StatelessWidget {
       ],
       Row(children: [Expanded(child: _Stat(icon: Icons.local_fire_department_rounded, color: lime, value: '$cals', label: 'Calories')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.access_time_rounded, color: lime, value: '$mins', label: 'Mins')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.fitness_center_rounded, color: lime, value: todaysWorkouts.length.toString(), label: 'Workouts'))]),
       const SizedBox(height: 18),
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.duration).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.durationInMinutes).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
       const SizedBox(height: 10), _Chart(workouts: weekly, today: today),
       const SizedBox(height: 18),
       InkWell(
@@ -148,7 +148,7 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.auto_awesome_rounded, label: 'FitTrack AI', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AiAssistantScreen())))),
       ]),
       const SizedBox(height: 22), Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Recent Workouts', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text('${workouts.length} total', style: const TextStyle(fontSize: 11, color: muted))]), const SizedBox(height: 8),
-      if (workouts.isEmpty) const _Empty(text: 'Your workouts will appear here.') else ...workouts.take(3).map((w) => _Recent(icon: _workoutIcon(w.category), title: w.name, subtitle: '${w.category}  •  ${w.duration} min', trailing: _formatRecentDate(w.date))),
+      if (workouts.isEmpty) const _Empty(text: 'Your workouts will appear here.') else ...workouts.take(3).map((w) => _Recent(icon: _workoutIcon(w.category), title: w.name, subtitle: '${w.category}  •  ${w.formattedDuration}', trailing: _formatRecentDate(w.date))),
       const SizedBox(height: 14), Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Recent Meals', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text('${meals.length} total', style: const TextStyle(fontSize: 11, color: muted))]), const SizedBox(height: 8),
       if (meals.isEmpty) const _Empty(text: 'Your meals will appear here.') else ...meals.take(3).map((m) => _Recent(icon: Icons.restaurant_rounded, title: m.foodName, subtitle: '${m.category}  •  ${m.calories} kcal', trailing: _formatRecentDate(m.date))),
       const SizedBox(height: 14),
@@ -236,7 +236,7 @@ class _Chart extends StatelessWidget {
     final days = List<DateTime>.generate(7, (i) => today.subtract(Duration(days: 6 - i)));
     final totals = days.map((day) => workouts
         .where((workout) => DateUtils.isSameDay(workout.date, day))
-        .fold<int>(0, (sum, workout) => sum + workout.duration)).toList();
+        .fold<int>(0, (sum, workout) => sum + workout.durationInMinutes)).toList();
     final maxMinutes = totals.fold<int>(0, (maxValue, value) => value > maxValue ? value : maxValue);
     final hasActivity = maxMinutes > 0;
     return Container(

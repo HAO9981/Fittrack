@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/app_user.dart';
-import 'screens/auth/login_screen.dart';
+import 'screens/auth/welcome_screen.dart';
 import 'screens/home/main_screen.dart';
 import 'services/auth_service.dart';
 import 'widgets/app_error.dart';
@@ -23,10 +23,12 @@ class App extends StatelessWidget {
       title: 'FitTrack', debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true, colorScheme: scheme, scaffoldBackgroundColor: fitTrackBackground,
+        textTheme: ThemeData.dark().textTheme.apply(bodyColor: fitTrackInk, displayColor: fitTrackInk),
         appBarTheme: const AppBarTheme(backgroundColor: fitTrackBackground, foregroundColor: fitTrackInk, elevation: 0, surfaceTintColor: Colors.transparent),
         cardTheme: CardThemeData(color: fitTrackSurface, elevation: 0, margin: EdgeInsets.zero, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
         inputDecorationTheme: InputDecorationTheme(
-          filled: true, fillColor: fitTrackSurface, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          filled: true, fillColor: const Color(0xFF101613), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          hintStyle: const TextStyle(color: Color(0xFF778078), fontSize: 13),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: fitTrackBorder)),
           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: fitTrackBorder)),
           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: fitTrackLime, width: 1.5)),
@@ -57,7 +59,7 @@ class AuthGate extends StatelessWidget {
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) return const AppLoading(message: 'Checking your session...');
       if (snapshot.hasError) return AppError(message: 'Unable to check your sign-in status.');
-      return snapshot.data == null ? const LoginScreen() : const MainScreen();
+      return snapshot.data == null ? const WelcomeScreen() : const MainScreen();
     },
   );
 }

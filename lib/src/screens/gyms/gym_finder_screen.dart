@@ -229,6 +229,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
 
   Set<Marker> get _markers => _visiblePlaces.map((p) => Marker(
     markerId: MarkerId(p.id), position: p.position,
+    icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
     infoWindow: InfoWindow(title: p.name, snippet: p.address),
     onTap: () => setState(() => _selectedId = p.id),
   )).toSet();
@@ -266,7 +267,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
               }
             },
             selectedColor: _lime, backgroundColor: const Color(0xFF141B17), side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(),
-            labelStyle: TextStyle(color: _ink, fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
+            labelStyle: TextStyle(color: selected ? const Color(0xFF080D0B) : _ink, fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
           ));
         }).toList())),
         const SizedBox(height: 18),
@@ -296,10 +297,10 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
         const SizedBox(height: 10),
         if (_error != null) Container(
           padding: const EdgeInsets.all(14), margin: const EdgeInsets.only(bottom: 10),
-          decoration: BoxDecoration(color: const Color(0xFFFFF0E8), borderRadius: BorderRadius.circular(16)),
+          decoration: BoxDecoration(color: const Color(0xFF241B14), border: Border.all(color: const Color(0xFF493322)), borderRadius: BorderRadius.circular(16)),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Icon(Icons.info_outline_rounded, color: Color(0xFF9B4A20)), const SizedBox(width: 9),
-            Expanded(child: Text(_error!, style: const TextStyle(color: Color(0xFF713B20), fontSize: 12, height: 1.4))),
+            const Icon(Icons.info_outline_rounded, color: Color(0xFFFFB75E)), const SizedBox(width: 9),
+            Expanded(child: Text(_error!, style: const TextStyle(color: Color(0xFFF0D5B9), fontSize: 12, height: 1.4))),
           ]),
         ),
         if (_loading && _places.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Center(child: CircularProgressIndicator(color: _lime)))

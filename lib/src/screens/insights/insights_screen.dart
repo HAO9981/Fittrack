@@ -71,7 +71,7 @@ class _HistoryTabState extends State<_HistoryTab> {
     final workoutEntries = widget.workouts.map((w) => _HistoryEntry(
       date: w.date,
       title: w.name,
-      subtitle: '${w.category} · ${w.duration} min',
+      subtitle: '${w.category} · ${w.formattedDuration}',
       icon: Icons.fitness_center_rounded,
     )).toList();
     final mealEntries = widget.meals.map((m) => _HistoryEntry(
@@ -148,7 +148,7 @@ class _HistoryFilter extends StatelessWidget {
           side: BorderSide.none,
           showCheckmark: false,
           shape: const StadiumBorder(),
-          labelStyle: TextStyle(color: _ink, fontSize: 12, fontWeight: active ? FontWeight.w700 : FontWeight.w500),
+          labelStyle: TextStyle(color: active ? const Color(0xFF080D0B) : _ink, fontSize: 12, fontWeight: active ? FontWeight.w700 : FontWeight.w500),
         ),
       );
     }).toList()),
@@ -171,12 +171,12 @@ class _ProgressTab extends StatelessWidget {
     final today = DateUtils.dateOnly(DateTime.now());
     final minutes = List<int>.generate(7, (i) {
       final day = today.subtract(Duration(days: 6 - i));
-      return workouts.where((w) => DateUtils.isSameDay(w.date, day)).fold<int>(0, (sum, w) => sum + w.duration);
+      return workouts.where((w) => DateUtils.isSameDay(w.date, day)).fold<int>(0, (sum, w) => sum + w.durationInMinutes);
     });
     final maxMinutes = minutes.fold<int>(0, (max, value) => value > max ? value : max);
     final weekMeals = meals.where((m) => !DateUtils.dateOnly(m.date).isBefore(today.subtract(const Duration(days: 6)))).toList();
     final weekWorkouts = workouts.where((w) => !DateUtils.dateOnly(w.date).isBefore(today.subtract(const Duration(days: 6)))).toList();
-    final totalMinutes = weekWorkouts.fold<int>(0, (sum, w) => sum + w.duration);
+    final totalMinutes = weekWorkouts.fold<int>(0, (sum, w) => sum + w.durationInMinutes);
     final totalCalories = weekMeals.fold<int>(0, (sum, m) => sum + m.calories);
     const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     return ListView(padding: const EdgeInsets.all(18), children: [

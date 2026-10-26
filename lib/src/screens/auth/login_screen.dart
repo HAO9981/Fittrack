@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       await FirebaseAuthService.instance.signInWithEmail(_emailController.text, _passwordController.text);
+      if (mounted) await Navigator.of(context).maybePop();
     } on firebase_auth.FirebaseAuthException catch (error) {
       _showMessage(_authErrorMessage(error));
     } catch (_) {
