@@ -7,10 +7,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
-const _lime = Color(0xFF84E221);
-const _ink = Color(0xFF232824);
-const _muted = Color(0xFF858C83);
-const _bg = Color(0xFFF6F7F4);
+const _lime = Color(0xFF9BFF3D);
+const _ink = Color(0xFFF4F7F1);
+const _muted = Color(0xFF9AA69C);
+const _bg = Color(0xFF080D0B);
 const _placesApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
 
 class _GymPlace {
@@ -265,12 +265,12 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
                 _loadNearbyPlaces();
               }
             },
-            selectedColor: _lime, backgroundColor: Colors.white, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(),
+            selectedColor: _lime, backgroundColor: const Color(0xFF141B17), side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(),
             labelStyle: TextStyle(color: _ink, fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
           ));
         }).toList())),
         const SizedBox(height: 18),
-        Container(height: 270, clipBehavior: Clip.antiAlias, decoration: BoxDecoration(color: const Color(0xFFE8ECE4), borderRadius: BorderRadius.circular(24)),
+        Container(height: 270, clipBehavior: Clip.antiAlias, decoration: BoxDecoration(color: const Color(0xFF27332B), borderRadius: BorderRadius.circular(24)),
           child: Stack(children: [
             if (_placesApiKey.isNotEmpty) GoogleMap(
               initialCameraPosition: CameraPosition(target: target, zoom: 11),
@@ -278,12 +278,12 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
               markers: _markers,
               onMapCreated: (c) { if (!_mapController.isCompleted) _mapController.complete(c); },
             ) else const Center(child: Icon(Icons.map_outlined, size: 52, color: _muted)),
-            Positioned(top: 12, right: 12, child: Material(color: Colors.white, borderRadius: BorderRadius.circular(14), child: IconButton(
+            Positioned(top: 12, right: 12, child: Material(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(14), child: IconButton(
               tooltip: 'Refresh nearby gyms', onPressed: _loading ? null : _loadNearbyPlaces,
               icon: _loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.my_location_rounded, color: _ink),
             ))),
             if (_placesApiKey.isEmpty) Positioned(left: 12, right: 12, bottom: 12, child: Container(
-              padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(16)),
               child: const Text('Add your Google Maps API key to enable the live map and nearby search.', style: TextStyle(fontSize: 12, color: _ink), textAlign: TextAlign.center),
             )),
           ]),
@@ -304,9 +304,9 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
         ),
         if (_loading && _places.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Center(child: CircularProgressIndicator(color: _lime)))
         else if (places.isEmpty) Container(
-          padding: const EdgeInsets.all(22), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+          padding: const EdgeInsets.all(22), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
           child: Column(children: [
-            Container(width: 60, height: 60, decoration: BoxDecoration(color: const Color(0xFFEAF7D9), borderRadius: BorderRadius.circular(20)), child: const Icon(Icons.location_on_outlined, color: _ink, size: 30)),
+            Container(width: 60, height: 60, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(20)), child: const Icon(Icons.location_on_outlined, color: _ink, size: 30)),
             const SizedBox(height: 12),
             Text(_searchController.text.trim().isNotEmpty ? 'No matching places' : _places.isEmpty ? 'No nearby gyms found yet' : 'No places match this filter',
               textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
@@ -323,12 +323,12 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
   Widget _placeCard(_GymPlace place) {
     final selected = _selectedId == place.id;
     return Padding(padding: const EdgeInsets.only(bottom: 10), child: Material(
-      color: Colors.white, borderRadius: BorderRadius.circular(20),
+      color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(20),
       child: InkWell(borderRadius: BorderRadius.circular(20), onTap: () => _focusPlace(place), child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), border: selected ? Border.all(color: _lime, width: 2) : null),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(width: 54, height: 54, decoration: BoxDecoration(color: const Color(0xFFEAF7D9), borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.fitness_center_rounded, color: _ink, size: 25)),
+          Container(width: 54, height: 54, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.fitness_center_rounded, color: _ink, size: 25)),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(place.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _ink)),
