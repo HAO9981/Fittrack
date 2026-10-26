@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 
 import '../../services/auth_service.dart';
 import 'register_screen.dart';
@@ -228,7 +227,7 @@ class _SocialSignInButton extends StatelessWidget {
       ),
       child: Center(
         child: label == 'Apple'
-            ? const Icon(CupertinoIcons.apple_logo, size: 25, color: Colors.white)
+            ? const Icon(Icons.apple, size: 25, color: Colors.white)
             : label == 'Google'
                 ? const Text('G', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Color(0xFF4285F4)))
                 : const Icon(Icons.facebook_rounded, size: 29, color: Colors.white),
