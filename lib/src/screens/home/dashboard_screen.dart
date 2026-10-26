@@ -12,7 +12,7 @@ import '../nutrition/add_meal_screen.dart';
 import '../insights/insights_screen.dart';
 import '../ai/ai_assistant_screen.dart';
 
-const lime = Color(0xFF84E221), ink = Color(0xFF232824), muted = Color(0xFF858C83), bg = Color(0xFFF6F7F4);
+const lime = Color(0xFF9BFF3D), ink = Color(0xFFF4F7F1), muted = Color(0xFF9AA69C), bg = Color(0xFF080D0B), surface = Color(0xFF141B17), border = Color(0xFF27332B);
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -58,13 +58,13 @@ class _DashboardContent extends StatelessWidget {
     final cals = todaysMeals.fold<int>(0, (s, m) => s + m.calories);
     final greeting = now.hour < 12 ? 'Good morning,' : now.hour < 18 ? 'Good afternoon,' : 'Good evening,';
     return ListView(padding: const EdgeInsets.fromLTRB(18, 8, 18, 22), children: [
-      Row(children: [const Expanded(child: Text('FitTrack', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink))), IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_rounded)), CircleAvatar(backgroundColor: const Color(0xFFE7EEDC), child: Text(name[0].toUpperCase()))]),
+      Row(children: [const Expanded(child: Text('FitTrack', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink))), IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_rounded)), CircleAvatar(backgroundColor: const Color(0xFF263522), child: Text(name[0].toUpperCase()))]),
       const SizedBox(height: 10), Text(greeting, style: const TextStyle(color: muted)), Text('$name!', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800, color: ink)),
       const SizedBox(height: 4), Text(MaterialLocalizations.of(context).formatFullDate(now), style: const TextStyle(fontSize: 12, color: muted)),
       const SizedBox(height: 18),
       Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: ink, borderRadius: BorderRadius.circular(24), gradient: const LinearGradient(colors: [Color(0xFF202720), Color(0xFF101710)])), child: Row(children: [
-        SizedBox(width: 102, height: 102, child: Stack(alignment: Alignment.center, children: [const SizedBox.expand(child: CircularProgressIndicator(value: .72, strokeWidth: 9, backgroundColor: Color(0xFF465044), valueColor: AlwaysStoppedAnimation<Color>(lime))), const Icon(Icons.directions_run_rounded, size: 34, color: Colors.white)])),
-        const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Today's Activity", style: TextStyle(color: Colors.white70, fontSize: 12)), const SizedBox(height: 8), Text('$mins min', style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)), Text('$cals kcal logged', style: const TextStyle(color: Colors.white)), const SizedBox(height: 8), Text(todaysWorkouts.length.toString() + ' workout(s) completed', style: const TextStyle(color: Color(0xFFB8C5B1), fontSize: 11))]))
+        SizedBox(width: 102, height: 102, child: Stack(alignment: Alignment.center, children: [const SizedBox.expand(child: CircularProgressIndicator(value: .72, strokeWidth: 9, backgroundColor: Color(0xFF34452E), valueColor: AlwaysStoppedAnimation<Color>(lime))), const Icon(Icons.directions_run_rounded, size: 34, color: surface)])),
+        const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Today's Activity", style: TextStyle(color: surface70, fontSize: 12)), const SizedBox(height: 8), Text('$mins min', style: const TextStyle(color: surface, fontSize: 26, fontWeight: FontWeight.w800)), Text('$cals kcal logged', style: const TextStyle(color: surface)), const SizedBox(height: 8), Text(todaysWorkouts.length.toString() + ' workout(s) completed', style: const TextStyle(color: Color(0xFFB8C7B8), fontSize: 11))]))
       ])),
       const SizedBox(height: 12),
       if (profile?.weightKg != null || profile?.targetWeightKg != null) ...[
@@ -85,16 +85,16 @@ class _DashboardContent extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE4EBD9)),
+            border: Border.all(color: const border),
           ),
           child: Row(children: [
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF7D9),
+                color: const Color(0xFF25351D),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(Icons.auto_awesome_rounded, color: ink),
@@ -129,9 +129,9 @@ class _DashboardContent extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Container(
           padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+          decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)),
           child: Row(children: [
-            Container(width: 42, height: 42, decoration: BoxDecoration(color: Color(0xFFEAF7D9), borderRadius: BorderRadius.all(Radius.circular(14))), child: Icon(Icons.insights_rounded, color: ink)),
+            Container(width: 42, height: 42, decoration: BoxDecoration(color: Color(0xFF25351D), borderRadius: BorderRadius.all(Radius.circular(14))), child: Icon(Icons.insights_rounded, color: ink)),
             SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('History, Progress & Tips', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
@@ -160,9 +160,9 @@ class _WeightGoalOverview extends StatelessWidget {
     final reached = difference != null && difference < 0.05;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(20)),
       child: Row(children: [
-        Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFEAF7D9), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.monitor_weight_outlined, color: ink)),
+        Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.monitor_weight_outlined, color: ink)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Weight goal', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
@@ -185,7 +185,7 @@ class _WeightGoalOverview extends StatelessWidget {
 class _Stat extends StatelessWidget {
   const _Stat({required this.icon, required this.color, required this.value, required this.label});
   final IconData icon; final Color color; final String value, label;
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)), child: Column(children: [Icon(icon, color: color), const SizedBox(height: 6), Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: ink)), Text(label, style: const TextStyle(fontSize: 11, color: muted))]));
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(20)), child: Column(children: [Icon(icon, color: color), const SizedBox(height: 6), Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: ink)), Text(label, style: const TextStyle(fontSize: 11, color: muted))]));
 }
 
 class _Chart extends StatelessWidget {
@@ -195,9 +195,9 @@ class _Chart extends StatelessWidget {
     const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     final totals = List<int>.generate(7, (i) { final d = today.subtract(Duration(days: 6-i)); return workouts.where((w) => DateUtils.isSameDay(w.date, d)).fold<int>(0, (s,w) => s+w.duration); });
     final max = totals.fold<int>(0, (a,b) => a>b?a:b);
-    return Container(height: 125, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)), child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: List.generate(7, (i) {
+    return Container(height: 125, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(22)), child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: List.generate(7, (i) {
       final d = today.subtract(Duration(days: 6-i)); final h = max == 0 ? 8.0 : (totals[i] / max * 65).clamp(8.0, 65.0).toDouble();
-      return Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [Container(height: h, width: 10, decoration: BoxDecoration(color: totals[i] > 0 ? lime : const Color(0xFFE0E4DC), borderRadius: BorderRadius.circular(8))), const SizedBox(height: 7), Text(labels[d.weekday-1], style: const TextStyle(fontSize: 10, color: muted))]));
+      return Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [Container(height: h, width: 10, decoration: BoxDecoration(color: totals[i] > 0 ? lime : const Color(0xFF303A33), borderRadius: BorderRadius.circular(8))), const SizedBox(height: 7), Text(labels[d.weekday-1], style: const TextStyle(fontSize: 10, color: muted))]));
     })));
   }
 }
@@ -205,16 +205,16 @@ class _Chart extends StatelessWidget {
 class _Action extends StatelessWidget {
   const _Action({required this.icon, required this.label, required this.onTap});
   final IconData icon; final String label; final VoidCallback onTap;
-  @override Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18), child: Container(height: 86, padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 20, color: ink)), const SizedBox(height: 6), Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: ink))])));
+  @override Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18), child: Container(height: 86, padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFFF0F6E9), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 20, color: ink)), const SizedBox(height: 6), Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: ink))])));
 }
 
 class _Recent extends StatelessWidget {
   const _Recent({required this.icon, required this.title, required this.subtitle});
   final IconData icon; final String title, subtitle;
-  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(13), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)), child: Row(children: [Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFF0F3EC), borderRadius: BorderRadius.circular(14)), child: Icon(icon, color: ink)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.w700, color: ink)), Text(subtitle, style: const TextStyle(fontSize: 12, color: muted))]))]));
+  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(13), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Row(children: [Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFF0F3EC), borderRadius: BorderRadius.circular(14)), child: Icon(icon, color: ink)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.w700, color: ink)), Text(subtitle, style: const TextStyle(fontSize: 12, color: muted))]))]));
 }
 
 class _Empty extends StatelessWidget {
   const _Empty({required this.text}); final String text;
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)), child: Text(text, style: const TextStyle(color: muted)));
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(18)), child: Text(text, style: const TextStyle(color: muted)));
 }
