@@ -57,7 +57,7 @@ class _DashboardContent extends StatelessWidget {
     final mins = todaysWorkouts.fold<int>(0, (s, w) => s + w.duration);
     final cals = todaysMeals.fold<int>(0, (s, m) => s + m.calories);
     final greeting = now.hour < 12 ? 'Good morning,' : now.hour < 18 ? 'Good afternoon,' : 'Good evening,';
-    return ListView(padding: const EdgeInsets.fromLTRB(18, 8, 18, 22), children: [
+    return ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 18), children: [
       Row(children: [
         const Expanded(child: Text('FitTrack', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.4))),
         IconButton(
@@ -76,18 +76,18 @@ class _DashboardContent extends StatelessWidget {
           child: Center(child: Text(name[0].toUpperCase(), style: const TextStyle(color: lime, fontSize: 16, fontWeight: FontWeight.w800))),
         ),
       ]),
-      const SizedBox(height: 14),
+      const SizedBox(height: 10),
       Text(greeting, style: const TextStyle(color: muted, fontSize: 13)),
       const SizedBox(height: 2),
       Text('$name!', style: const TextStyle(fontSize: 29, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
       const SizedBox(height: 5),
       Text(MaterialLocalizations.of(context).formatFullDate(now), style: const TextStyle(fontSize: 12, color: muted)),
-      const SizedBox(height: 18),
+      const SizedBox(height: 14),
       Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(24), border: Border.all(color: border), gradient: const LinearGradient(colors: [Color(0xFF1B261C), Color(0xFF111813)])),
         child: Row(children: [
-          SizedBox(width: 102, height: 102, child: Stack(alignment: Alignment.center, children: [
+          SizedBox(width: 88, height: 88, child: Stack(alignment: Alignment.center, children: [
             SizedBox.expand(child: CircularProgressIndicator(value: (mins / 60).clamp(0.0, 1.0), strokeWidth: 9, backgroundColor: const Color(0xFF34452E), valueColor: const AlwaysStoppedAnimation<Color>(lime), strokeCap: StrokeCap.round)),
             Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.directions_run_rounded, size: 27, color: lime), const SizedBox(height: 2), Text('${((mins / 60).clamp(0.0, 1.0) * 100).round()}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: ink))]),
           ])),
@@ -101,10 +101,10 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(height: 12),
       ],
       Row(children: [Expanded(child: _Stat(icon: Icons.local_fire_department_rounded, color: lime, value: '$cals', label: 'Calories')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.access_time_rounded, color: lime, value: '$mins', label: 'Mins')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.fitness_center_rounded, color: lime, value: todaysWorkouts.length.toString(), label: 'Workouts'))]),
-      const SizedBox(height: 22),
+      const SizedBox(height: 18),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.duration).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
       const SizedBox(height: 10), _Chart(workouts: weekly, today: today),
-      const SizedBox(height: 22),
+      const SizedBox(height: 18),
       InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
