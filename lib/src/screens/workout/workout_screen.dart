@@ -202,23 +202,37 @@ Widget _topTab(String label, bool selected, VoidCallback onTap) => Material(
 );
 
 const _exerciseItems = [
-  ('Push Up', 'Strength', '3 sets · 15 reps', Icons.fitness_center_rounded),
-  ('Squat', 'Strength', '4 sets · 12 reps', Icons.accessibility_new_rounded),
-  ('Bench Press', 'Strength', '4 sets · 10 reps', Icons.fitness_center_rounded),
-  ('Plank', 'Full Body', '3 sets · 60 sec', Icons.self_improvement_rounded),
-  ('Running', 'Cardio', '30 min', Icons.directions_run_rounded),
+  ('Push Up', 'Strength', '3 sets · 15 reps', Icons.fitness_center_rounded, 'https://images.unsplash.com/photo-1561909234-3f308b7de1b8?auto=format&fit=crop&w=240&q=80'),
+  ('Squat', 'Strength', '4 sets · 12 reps', Icons.accessibility_new_rounded, 'https://images.unsplash.com/photo-1566241142559-40e1dab266c6?auto=format&fit=crop&w=240&q=80'),
+  ('Bench Press', 'Strength', '4 sets · 10 reps', Icons.fitness_center_rounded, 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=240&q=80'),
+  ('Plank', 'Full Body', '3 sets · 60 sec', Icons.self_improvement_rounded, 'https://images.unsplash.com/photo-1566241142559-40e1dab266c6?auto=format&fit=crop&w=240&q=80'),
+  ('Running', 'Cardio', '30 min', Icons.directions_run_rounded, 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=240&q=80'),
 ];
 
 class _ExerciseCard extends StatelessWidget {
   const _ExerciseCard({required this.item, required this.onAdd});
-  final (String, String, String, IconData) item;
+  final (String, String, String, IconData, String) item;
   final VoidCallback onAdd;
   @override Widget build(BuildContext context) => Container(
     margin: const EdgeInsets.only(bottom: 8),
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
     decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFF202B24))),
     child: Row(children: [
-      Container(width: 48, height: 44, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(10)), child: Icon(item.$4, color: _lime, size: 22)),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.network(
+          item.$5,
+          width: 58,
+          height: 48,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 58,
+            height: 48,
+            color: const Color(0xFF25351D),
+            child: Icon(item.$4, color: _lime, size: 22),
+          ),
+        ),
+      ),
       const SizedBox(width: 10),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(item.$1, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink)),
