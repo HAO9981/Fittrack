@@ -17,9 +17,10 @@ class WorkoutScreen extends StatefulWidget {
 }
 class _WorkoutScreenState extends State<WorkoutScreen> {
   String _filter = 'All';
+  bool _showExercises = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  static const _filters = ['All', 'Strength', 'Cardio', 'Flexibility', 'HIIT'];
+  static const _filters = ['All', 'Strength', 'Cardio', 'Full Body'];
 
   @override
   void dispose() {
@@ -44,7 +45,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         if (snapshot.hasError) return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(snapshot.error is StateError ? 'Please sign in to view your workouts.' : 'Unable to load workouts. Please try again.', textAlign: TextAlign.center)));
         final all = snapshot.data ?? <Workout>[];
         final filtered = all.where((w) {
-          final matchesCategory = _filter == 'All' || w.category.toLowerCase() == _filter.toLowerCase();
+          final matchesCategory = _filter == 'All' || (_filter == 'Full Body' ? w.category.toLowerCase() == 'strength' : w.category.toLowerCase() == _filter.toLowerCase());
           final query = _searchQuery.trim().toLowerCase();
           final matchesSearch = query.isEmpty || w.name.toLowerCase().contains(query) || w.category.toLowerCase().contains(query);
           return matchesCategory && matchesSearch;
@@ -52,9 +53,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         final minutes = all.fold<int>(0, (sum, w) => sum + w.duration);
         return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 100), children: [
           Row(children: [
-            const Expanded(child: Text('Workouts', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _ink))),
-            Material(color: _lime, borderRadius: BorderRadius.circular(17), child: InkWell(onTap: _add, borderRadius: BorderRadius.circular(17), child: const SizedBox(width: 48, height: 48, child: Icon(Icons.add_rounded, color: _ink, size: 28)))),
+            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Workout', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800, color: _ink)), SizedBox(height: 2), Text('Track your workouts and stay consistent', style: TextStyle(fontSize: 11, color: _muted))])),
+            Material(color: _lime, borderRadius: BorderRadius.circular(16), child: InkWell(onTap: _add, borderRadius: BorderRadius.circular(16), child: const SizedBox(width: 46, height: 46, child: Icon(Icons.add_rounded, color: Color(0xFF080D0B), size: 27)))),
           ]),
+          const SizedBox(height: 14),
+          Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(13)), child: Row(children: [Expanded(child: _topTab('My Workouts', !_showExercises, () => setState(() => _showExercises = false))), Expanded(child: _topTab('Exercises', _showExercises, () => setState(() => _showExercises = true))])),
           const SizedBox(height: 12),
           TextField(
             controller: _searchController,
@@ -82,21 +85,25 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             return Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(f), selected: selected, onSelected: (_) => setState(() => _filter = f), backgroundColor: const Color(0xFF27332B), selectedColor: _lime, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(), labelStyle: TextStyle(fontSize: 12, color: _ink, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)));
           }).toList())),
           const SizedBox(height: 14),
-          Row(children: [
+          if (!_showExercises) Row(children: [
             Expanded(child: _WorkoutStat(icon: Icons.fitness_center_rounded, label: 'Workouts', value: all.length.toString())),
             const SizedBox(width: 10),
             Expanded(child: _WorkoutStat(icon: Icons.schedule_rounded, label: 'Active minutes', value: minutes.toString())),
           ]),
           const SizedBox(height: 18),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          if (!_showExercises) Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             const Text('Your activity', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: _ink)),
             Text(filtered.length.toString() + ' workouts', style: const TextStyle(fontSize: 12, color: _muted)),
           ]),
           const SizedBox(height: 10),
-          if (filtered.isEmpty)
+          if (_showExercises)
+            ..._exerciseItems.map((item) => _ExerciseCard(item: item, onAdd: _add))
+          else if (filtered.isEmpty)
             const AppEmptyState(icon: Icons.fitness_center_outlined, title: 'Ready to get moving?', message: 'Add your first workout to start building your fitness history.')
           else
             ...filtered.map((w) => _WorkoutCard(workout: w)),
+          const SizedBox(height: 12),
+          SizedBox(height: 50, child: FilledButton.icon(onPressed: _add, style: FilledButton.styleFrom(backgroundColor: _lime, foregroundColor: const Color(0xFF080D0B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), icon: const Icon(Icons.add_circle_outline_rounded), label: const Text('Add Workout', style: TextStyle(fontWeight: FontWeight.w800))),),
         ]);
       },
     )),
@@ -161,3 +168,40 @@ IconData _workoutIcon(String category) => switch (category) {
   'Strength' => Icons.fitness_center_rounded,
   _ => Icons.sports_gymnastics_rounded,
 };
+
+Widget _topTab(String label, bool selected, VoidCallback onTap) => Material(
+  color: selected ? _lime : Colors.transparent,
+  borderRadius: BorderRadius.circular(10),
+  child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(10),
+    child: Padding(padding: const EdgeInsets.symmetric(vertical: 11),
+      child: Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: selected ? const Color(0xFF080D0B) : _muted)))),
+);
+
+const _exerciseItems = [
+  ('Push Up', 'Strength', '3 sets · 15 reps', Icons.fitness_center_rounded),
+  ('Squat', 'Strength', '4 sets · 12 reps', Icons.accessibility_new_rounded),
+  ('Bench Press', 'Strength', '4 sets · 10 reps', Icons.fitness_center_rounded),
+  ('Plank', 'Full Body', '3 sets · 60 sec', Icons.self_improvement_rounded),
+  ('Running', 'Cardio', '30 min', Icons.directions_run_rounded),
+];
+
+class _ExerciseCard extends StatelessWidget {
+  const _ExerciseCard({required this.item, required this.onAdd});
+  final (String, String, String, IconData) item;
+  final VoidCallback onAdd;
+  @override Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+    decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFF202B24))),
+    child: Row(children: [
+      Container(width: 48, height: 44, decoration: BoxDecoration(color: const Color(0xFF25351D), borderRadius: BorderRadius.circular(10)), child: Icon(item.$4, color: _lime, size: 22)),
+      const SizedBox(width: 10),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(item.$1, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _ink)),
+        const SizedBox(height: 3),
+        Text(item.$3, style: const TextStyle(fontSize: 10, color: _muted)),
+      ])),
+      IconButton(onPressed: onAdd, icon: const Icon(Icons.play_circle_outline_rounded, color: _lime, size: 24), tooltip: 'Log workout'),
+    ]),
+  );
+}
