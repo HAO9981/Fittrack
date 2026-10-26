@@ -62,9 +62,9 @@ class _DashboardContent extends StatelessWidget {
       const SizedBox(height: 10), Text(greeting, style: const TextStyle(color: muted)), Text('$name!', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800, color: ink)),
       const SizedBox(height: 4), Text(MaterialLocalizations.of(context).formatFullDate(now), style: const TextStyle(fontSize: 12, color: muted)),
       const SizedBox(height: 18),
-      Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: ink, borderRadius: BorderRadius.circular(24), gradient: const LinearGradient(colors: [Color(0xFF202720), Color(0xFF101710)])), child: Row(children: [
-        SizedBox(width: 102, height: 102, child: Stack(alignment: Alignment.center, children: [const SizedBox.expand(child: CircularProgressIndicator(value: .72, strokeWidth: 9, backgroundColor: Color(0xFF34452E), valueColor: AlwaysStoppedAnimation<Color>(lime))), const Icon(Icons.directions_run_rounded, size: 34, color: surface)])),
-        const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Today's Activity", style: TextStyle(color: muted, fontSize: 12)), const SizedBox(height: 8), Text('$mins min', style: const TextStyle(color: surface, fontSize: 26, fontWeight: FontWeight.w800)), Text('$cals kcal logged', style: const TextStyle(color: surface)), const SizedBox(height: 8), Text(todaysWorkouts.length.toString() + ' workout(s) completed', style: const TextStyle(color: Color(0xFFB8C7B8), fontSize: 11))]))
+      Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(24), border: Border.all(color: border), gradient: const LinearGradient(colors: [Color(0xFF1B261C), Color(0xFF111813)])), child: Row(children: [
+        SizedBox(width: 102, height: 102, child: Stack(alignment: Alignment.center, children: [const SizedBox.expand(child: CircularProgressIndicator(value: .72, strokeWidth: 9, backgroundColor: Color(0xFF34452E), valueColor: AlwaysStoppedAnimation<Color>(lime))), const Icon(Icons.directions_run_rounded, size: 34, color: lime)])),
+        const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Today's Activity", style: TextStyle(color: muted, fontSize: 12)), const SizedBox(height: 8), Text('$mins min', style: const TextStyle(color: ink, fontSize: 26, fontWeight: FontWeight.w800)), Text('$cals kcal logged', style: const TextStyle(color: muted)), const SizedBox(height: 8), Text(todaysWorkouts.length.toString() + ' workout(s) completed', style: const TextStyle(color: ink, fontSize: 11))]))
       ])),
       const SizedBox(height: 12),
       if (profile?.weightKg != null || profile?.targetWeightKg != null) ...[
@@ -75,8 +75,7 @@ class _DashboardContent extends StatelessWidget {
       const SizedBox(height: 22),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.duration).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
       const SizedBox(height: 10), _Chart(workouts: weekly, today: today),
-      const SizedBox(height: 22), const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 10),
-      const SizedBox(height: 12),
+      const SizedBox(height: 22),
       InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
