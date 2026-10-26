@@ -5,7 +5,7 @@ import '../workout/workout_screen.dart';
 import '../gyms/gym_finder_screen.dart';
 import 'dashboard_screen.dart';
 
-const _navInk = Color(0xFF232824);
+const _navInk = Color(0xFF9BFF3D);
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
   @override State<MainScreen> createState() => _MainScreenState();
@@ -15,7 +15,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = const [DashboardScreen(), WorkoutScreen(), NutritionScreen(), GymFinderScreen(), ProfileScreen()];
   @override Widget build(BuildContext context) => Scaffold(
     body: IndexedStack(index: _selected, children: _pages),
-    bottomNavigationBar: NavigationBar(selectedIndex: _selected, onDestinationSelected: (index) => setState(() => _selected = index), height: 68, backgroundColor: Colors.white, indicatorColor: const Color(0xFFEAF7D9), labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+    bottomNavigationBar: NavigationBar(selectedIndex: _selected, onDestinationSelected: (index) => setState(() => _selected = index), height: 68, backgroundColor: const Color(0xFF141B17), indicatorColor: const Color(0xFF26391D), labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: const [
         NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded, color: _navInk), label: 'Home'),
         NavigationDestination(icon: Icon(Icons.fitness_center_outlined), selectedIcon: Icon(Icons.fitness_center_rounded, color: _navInk), label: 'Workouts'),
