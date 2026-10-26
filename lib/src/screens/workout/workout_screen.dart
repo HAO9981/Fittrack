@@ -202,11 +202,11 @@ Widget _topTab(String label, bool selected, VoidCallback onTap) => Material(
 );
 
 const _exerciseItems = [
-  ('Push Up', 'Strength', '3 sets · 15 reps', Icons.fitness_center_rounded, 'https://images.unsplash.com/photo-1561909234-3f308b7de1b8?auto=format&fit=crop&w=240&q=80'),
-  ('Squat', 'Strength', '4 sets · 12 reps', Icons.accessibility_new_rounded, 'https://images.unsplash.com/photo-1566241142559-40e1dab266c6?auto=format&fit=crop&w=240&q=80'),
-  ('Bench Press', 'Strength', '4 sets · 10 reps', Icons.fitness_center_rounded, 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=240&q=80'),
-  ('Plank', 'Full Body', '3 sets · 60 sec', Icons.self_improvement_rounded, 'https://images.unsplash.com/photo-1566241142559-40e1dab266c6?auto=format&fit=crop&w=240&q=80'),
-  ('Running', 'Cardio', '30 min', Icons.directions_run_rounded, 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=240&q=80'),
+  ('Push Up', 'Strength', '3 sets · 15 reps', Icons.fitness_center_rounded, 'assets/images/workouts/push_up.jpg'),
+  ('Squat', 'Strength', '4 sets · 12 reps', Icons.accessibility_new_rounded, 'assets/images/workouts/squat.jpg'),
+  ('Bench Press', 'Strength', '4 sets · 10 reps', Icons.fitness_center_rounded, 'assets/images/workouts/bench_press.jpg'),
+  ('Plank', 'Full Body', '3 sets · 60 sec', Icons.self_improvement_rounded, 'assets/images/workouts/plank.jpg'),
+  ('Running', 'Cardio', '30 min', Icons.directions_run_rounded, 'assets/images/workouts/running.jpg'),
 ];
 
 class _ExerciseCard extends StatelessWidget {
@@ -220,7 +220,7 @@ class _ExerciseCard extends StatelessWidget {
     child: Row(children: [
       ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: Image.network(
+        child: Image.asset(
           item.$5,
           width: 58,
           height: 48,
