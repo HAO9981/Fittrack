@@ -17,7 +17,15 @@ class WorkoutScreen extends StatefulWidget {
 }
 class _WorkoutScreenState extends State<WorkoutScreen> {
   String _filter = 'All';
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   static const _filters = ['All', 'Strength', 'Cardio', 'Flexibility', 'HIIT'];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _add() {
     if (FirebaseAuthService.instance.currentUser == null) {
@@ -35,14 +43,40 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: _lime));
         if (snapshot.hasError) return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(snapshot.error is StateError ? 'Please sign in to view your workouts.' : 'Unable to load workouts. Please try again.', textAlign: TextAlign.center)));
         final all = snapshot.data ?? <Workout>[];
-        final filtered = _filter == 'All' ? all : all.where((w) => w.category.toLowerCase() == _filter.toLowerCase()).toList();
+        final filtered = all.where((w) {
+          final matchesCategory = _filter == 'All' || w.category.toLowerCase() == _filter.toLowerCase();
+          final query = _searchQuery.trim().toLowerCase();
+          final matchesSearch = query.isEmpty || w.name.toLowerCase().contains(query) || w.category.toLowerCase().contains(query);
+          return matchesCategory && matchesSearch;
+        }).toList();
         final minutes = all.fold<int>(0, (sum, w) => sum + w.duration);
         return ListView(padding: const EdgeInsets.fromLTRB(18, 12, 18, 100), children: [
           Row(children: [
             const Expanded(child: Text('Workouts', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink))),
             Material(color: _lime, borderRadius: BorderRadius.circular(17), child: InkWell(onTap: _add, borderRadius: BorderRadius.circular(17), child: const SizedBox(width: 48, height: 48, child: Icon(Icons.add_rounded, color: _ink, size: 28)))),
           ]),
-          const SizedBox(height: 17),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _searchQuery = value),
+            style: const TextStyle(color: _ink, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'Search workouts...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: _searchQuery.isEmpty ? null : IconButton(
+                tooltip: 'Clear search',
+                onPressed: () => setState(() { _searchController.clear(); _searchQuery = ''; }),
+                icon: const Icon(Icons.close_rounded),
+              ),
+              filled: true,
+              fillColor: const Color(0xFF141B17),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF27332B))),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF27332B))),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: _lime)),
+            ),
+          ),
+          const SizedBox(height: 12),
           SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: _filters.map((f) {
             final selected = _filter == f;
             return Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(f), selected: selected, onSelected: (_) => setState(() => _filter = f), backgroundColor: const Color(0xFF27332B), selectedColor: _lime, side: BorderSide.none, showCheckmark: false, shape: const StadiumBorder(), labelStyle: TextStyle(fontSize: 12, color: _ink, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)));
