@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../services/auth_service.dart';
 import 'register_screen.dart';
@@ -225,24 +226,13 @@ class _SocialSignInButton extends StatelessWidget {
         shape: BoxShape.circle,
         border: label == 'Apple' ? Border.all(color: const Color(0xFF465047), width: 1) : null,
       ),
-      child: Padding(
-        padding: EdgeInsets.all(label == 'Google' ? 8 : label == 'Apple' ? 11 : 5),
-        child: Image.network(
-          label == 'Google'
-              ? 'https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png'
-              : label == 'Apple'
-                  ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/256px-Apple_logo_black.svg.png'
-                  : 'https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png',
-          width: 26,
-          height: 26,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) => Icon(
-            icon,
-            size: 22,
-            color: label == 'Facebook' ? Colors.white : const Color(0xFF111713),
-          ),
-        ),
-      ),
+      child: Center(
+        child: label == 'Apple'
+            ? const Icon(CupertinoIcons.apple_logo, size: 25, color: Colors.white)
+            : label == 'Google'
+                ? const Text('G', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Color(0xFF4285F4)))
+                : const Icon(Icons.facebook_rounded, size: 29, color: Colors.white),
+      )
     ),
   );
 }
