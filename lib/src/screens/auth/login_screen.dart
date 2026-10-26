@@ -84,14 +84,14 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 10),
         const Text('Your fitness journey continues here.', style: TextStyle(fontSize: 14, color: _muted)),
         const SizedBox(height: 26),
-        Container(height: 150, decoration: BoxDecoration(color: _ink, borderRadius: BorderRadius.circular(24)), clipBehavior: Clip.antiAlias, child: Stack(children: [
+        Container(height: 150, decoration: BoxDecoration(gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF1D2A1D), Color(0xFF101713)]), borderRadius: BorderRadius.circular(24), border: Border.all(color: const Color(0xFF34452E))), clipBehavior: Clip.antiAlias, child: Stack(children: [
           Positioned(right: -24, top: -44, child: Container(width: 180, height: 180, decoration: BoxDecoration(color: _lime.withValues(alpha: 0.16), shape: BoxShape.circle))),
           Positioned(right: 14, bottom: -72, child: Container(width: 180, height: 180, decoration: BoxDecoration(border: Border.all(color: _lime.withValues(alpha: 0.4), width: 2), shape: BoxShape.circle))),
           const Padding(padding: EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(Icons.directions_run_rounded, color: _lime, size: 32),
             SizedBox(height: 9),
-            Text('Small steps.', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-            Text('Stronger every day.', style: TextStyle(color: Color(0xFFD5D9D2), fontSize: 13)),
+            Text('Your Fitness Journey', style: TextStyle(color: _ink, fontSize: 18, fontWeight: FontWeight.w800)),
+            Text('Smarter with AI', style: TextStyle(color: _muted, fontSize: 13)),
           ])),
         ])),
         const SizedBox(height: 26),
