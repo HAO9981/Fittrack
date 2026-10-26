@@ -42,7 +42,7 @@ class App extends StatelessWidget {
           selectedLabelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 11), unselectedLabelStyle: TextStyle(fontSize: 11),
           type: BottomNavigationBarType.fixed, elevation: 0,
         ),
-        dividerColor: const fitTrackBorder,
+        dividerColor: fitTrackBorder,
       ),
       home: const AuthGate(),
     );
