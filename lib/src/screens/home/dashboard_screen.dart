@@ -71,7 +71,7 @@ class _DashboardContent extends StatelessWidget {
         _WeightGoalOverview(currentWeight: profile?.weightKg, targetWeight: profile?.targetWeightKg),
         const SizedBox(height: 12),
       ],
-      Row(children: [Expanded(child: _Stat(icon: Icons.local_fire_department_rounded, color: Colors.orange, value: '$cals', label: 'Calories')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.access_time_rounded, color: ink, value: '$mins', label: 'Mins')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.fitness_center_rounded, color: const Color(0xFF657B50), value: todaysWorkouts.length.toString(), label: 'Workouts'))]),
+      Row(children: [Expanded(child: _Stat(icon: Icons.local_fire_department_rounded, color: lime, value: '$cals', label: 'Calories')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.access_time_rounded, color: lime, value: '$mins', label: 'Mins')), const SizedBox(width: 10), Expanded(child: _Stat(icon: Icons.fitness_center_rounded, color: lime, value: todaysWorkouts.length.toString(), label: 'Workouts'))]),
       const SizedBox(height: 22),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.duration).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
       const SizedBox(height: 10), _Chart(workouts: weekly, today: today),
@@ -184,20 +184,95 @@ class _WeightGoalOverview extends StatelessWidget {
 class _Stat extends StatelessWidget {
   const _Stat({required this.icon, required this.color, required this.value, required this.label});
   final IconData icon; final Color color; final String value, label;
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(20)), child: Column(children: [Icon(icon, color: color), const SizedBox(height: 6), Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: ink)), Text(label, style: const TextStyle(fontSize: 11, color: muted))]));
+  @override Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+    decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: border.withValues(alpha: 0.55))),
+    child: Column(children: [
+      Icon(icon, color: color, size: 21),
+      const SizedBox(height: 7),
+      Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: ink)),
+      const SizedBox(height: 2),
+      Text(label, style: const TextStyle(fontSize: 11, color: muted)),
+    ]),
+  );
 }
 
 class _Chart extends StatelessWidget {
   const _Chart({required this.workouts, required this.today});
-  final List<Workout> workouts; final DateTime today;
-  @override Widget build(BuildContext context) {
-    const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    final totals = List<int>.generate(7, (i) { final d = today.subtract(Duration(days: 6-i)); return workouts.where((w) => DateUtils.isSameDay(w.date, d)).fold<int>(0, (s,w) => s+w.duration); });
-    final max = totals.fold<int>(0, (a,b) => a>b?a:b);
-    return Container(height: 125, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(22)), child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: List.generate(7, (i) {
-      final d = today.subtract(Duration(days: 6-i)); final h = max == 0 ? 8.0 : (totals[i] / max * 65).clamp(8.0, 65.0).toDouble();
-      return Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [Container(height: h, width: 10, decoration: BoxDecoration(color: totals[i] > 0 ? lime : const Color(0xFF303A33), borderRadius: BorderRadius.circular(8))), const SizedBox(height: 7), Text(labels[d.weekday-1], style: const TextStyle(fontSize: 10, color: muted))]));
-    })));
+  final List<Workout> workouts;
+  final DateTime today;
+
+  @override
+  Widget build(BuildContext context) {
+    final days = List<DateTime>.generate(7, (i) => today.subtract(Duration(days: 6 - i)));
+    final totals = days.map((day) => workouts
+        .where((workout) => DateUtils.isSameDay(workout.date, day))
+        .fold<int>(0, (sum, workout) => sum + workout.duration)).toList();
+    final maxMinutes = totals.fold<int>(0, (maxValue, value) => value > maxValue ? value : maxValue);
+    final hasActivity = maxMinutes > 0;
+    return Container(
+      height: 154,
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 10),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: border.withValues(alpha: 0.55)),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(7, (index) {
+                final minutes = totals[index];
+                final fraction = maxMinutes == 0 ? 0.0 : minutes / maxMinutes;
+                final barHeight = hasActivity ? (fraction * 72).clamp(8.0, 72.0).toDouble() : 8.0;
+                final isToday = DateUtils.isSameDay(days[index], today);
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (minutes > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text('$minutes', style: const TextStyle(fontSize: 9, color: muted, fontWeight: FontWeight.w600)),
+                          ),
+                        Container(
+                          height: 76,
+                          alignment: Alignment.bottomCenter,
+                          child: Container(
+                            height: barHeight,
+                            width: 13,
+                            decoration: BoxDecoration(
+                              color: minutes > 0 ? lime : const Color(0xFF303A33),
+                              borderRadius: BorderRadius.circular(7),
+                              boxShadow: minutes > 0 ? [BoxShadow(color: lime.withValues(alpha: 0.13), blurRadius: 8)] : null,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 7),
+          Row(
+            children: List.generate(7, (index) => Expanded(
+              child: Center(
+                child: Text(
+                  ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][days[index].weekday - 1],
+                  style: TextStyle(fontSize: 10, color: DateUtils.isSameDay(days[index], today) ? lime : muted, fontWeight: DateUtils.isSameDay(days[index], today) ? FontWeight.w700 : FontWeight.w400),
+                ),
+              ),
+            )),
+          ),
+        ],
+      ),
+    );
   }
 }
 
