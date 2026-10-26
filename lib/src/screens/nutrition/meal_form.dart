@@ -91,9 +91,9 @@ class _MealFormState extends State<MealForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Log your meal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF232824))),
+                const Text('Log your meal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFFF4F7F1))),
                 const SizedBox(height: 5),
-                const Text('Keep track of what you eat each day.', style: TextStyle(fontSize: 13, color: Color(0xFF858C83))),
+                const Text('Keep track of what you eat each day.', style: TextStyle(fontSize: 13, color: Color(0xFF9AA69C))),
                 const SizedBox(height: 22),
                 const Text('Food name', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 7),
@@ -133,12 +133,12 @@ class _MealFormState extends State<MealForm> {
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
-                    decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE8EBE5)), borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: const Color(0xFF101613), border: Border.all(color: const Color(0xFF27332B)), borderRadius: BorderRadius.circular(16)),
                     child: Row(children: [
-                      const Icon(Icons.calendar_month_outlined, color: Color(0xFF858C83)),
+                      const Icon(Icons.calendar_month_outlined, color: Color(0xFF9AA69C)),
                       const SizedBox(width: 12),
                       Expanded(child: Text(MaterialLocalizations.of(context).formatMediumDate(_date), style: const TextStyle(fontSize: 14))),
-                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF858C83)),
+                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF9AA69C)),
                     ]),
                   ),
                 ),
@@ -150,7 +150,7 @@ class _MealFormState extends State<MealForm> {
                 const SizedBox(height: 8),
                 SizedBox(height: 48, child: OutlinedButton(
                   onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                  style: OutlinedButton.styleFrom(side: BorderSide.none, backgroundColor: const Color(0xFFEDEFEA), foregroundColor: const Color(0xFF232824), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF27332B)), backgroundColor: const Color(0xFF141B17), foregroundColor: const Color(0xFFF4F7F1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                   child: const Text('Cancel'),
                 )),
               ],

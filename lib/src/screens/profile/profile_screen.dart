@@ -121,7 +121,7 @@ class _ProfileFormState extends State<_ProfileForm> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: const Color(0xFFF6F7F4),
+        backgroundColor: const Color(0xFF080D0B),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(18, 14, 18, 28),
@@ -132,47 +132,47 @@ class _ProfileFormState extends State<_ProfileForm> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(child: Text('Profile', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF232824)))),
+                      const Expanded(child: Text('Profile', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFFF4F7F1)))),
                       IconButton(
                         tooltip: 'Account settings',
                         onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You can update your personal details below.'))),
-                        icon: const Icon(Icons.settings_outlined, color: Color(0xFF232824)),
+                        icon: const Icon(Icons.settings_outlined, color: Color(0xFF9AA69C)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+                    decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
                     child: Row(
                       children: [
                         CircleAvatar(
                           radius: 32,
-                          backgroundColor: const Color(0xFFEAF4DE),
+                          backgroundColor: const Color(0xFF25351D),
                           child: Text(
                             _nameController.text.trim().isEmpty ? 'U' : _nameController.text.trim()[0].toUpperCase(),
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF232824)),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF9BFF3D)),
                           ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(_nameController.text.trim().isEmpty ? 'FitTrack member' : _nameController.text.trim(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF232824))),
+                            Text(_nameController.text.trim().isEmpty ? 'FitTrack member' : _nameController.text.trim(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFFF4F7F1))),
                             const SizedBox(height: 4),
-                            Text(widget.profile.email ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF858C83))),
+                            Text(widget.profile.email ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF9AA69C))),
                             const SizedBox(height: 7),
-                            const Text('Edit Profile', style: TextStyle(fontSize: 12, color: Color(0xFF6AAE20), fontWeight: FontWeight.w700)),
+                            const Text('Edit Profile', style: TextStyle(fontSize: 12, color: Color(0xFF9BFF3D), fontWeight: FontWeight.w700)),
                           ]),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text('Personal details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF232824))),
+                  const Text('Personal details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFFF4F7F1))),
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+                    decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(22)),
                     child: Column(
                       children: [
                         TextFormField(
@@ -245,9 +245,9 @@ class _ProfileFormState extends State<_ProfileForm> {
                       icon: const Icon(Icons.logout_rounded),
                       label: const Text('Log Out'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFB23B3B),
-                        backgroundColor: const Color(0xFFFBE6E4),
-                        side: BorderSide.none,
+                        foregroundColor: const Color(0xFFFF756E),
+                        backgroundColor: const Color(0xFF211715),
+                        side: const BorderSide(color: Color(0xFF492B27)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                     ),

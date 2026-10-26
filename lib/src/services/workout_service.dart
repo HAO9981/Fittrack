@@ -28,6 +28,26 @@ class WorkoutService {
     }
   }
 
+  Stream<List<Workout>> getRecentWorkouts({
+    Duration lookback = const Duration(days: 30),
+    int limit = 10,
+  }) {
+    if (limit <= 0) return Stream<List<Workout>>.value(const []);
+
+    final cutoff = DateTime.now().subtract(lookback);
+    try {
+      return _workouts.orderBy('date', descending: true).snapshots().map(
+            (snapshot) => snapshot.docs
+                .map(Workout.fromFirestore)
+                .where((workout) => workout.date.isAfter(cutoff))
+                .take(limit)
+                .toList(),
+          );
+    } on StateError catch (error) {
+      return Stream<List<Workout>>.error(error);
+    }
+  }
+
   Future<void> addWorkout(Workout workout) async {
     final document = _workouts.doc();
     await document.set({

@@ -6,10 +6,10 @@ import '../../widgets/app_empty_state.dart';
 import 'add_meal_screen.dart';
 import 'edit_meal_screen.dart';
 
-const _lime = Color(0xFF84E221);
-const _ink = Color(0xFF232824);
-const _muted = Color(0xFF858C83);
-const _bg = Color(0xFFF6F7F4);
+const _lime = Color(0xFF9BFF3D);
+const _ink = Color(0xFFF4F7F1);
+const _muted = Color(0xFF9AA69C);
+const _bg = Color(0xFF080D0B);
 
 class NutritionScreen extends StatefulWidget {
   const NutritionScreen({super.key});
@@ -47,15 +47,15 @@ class _NutritionScreenState extends State<NutritionScreen> {
         return ListView(padding: const EdgeInsets.fromLTRB(18, 12, 18, 100), children: [
           Row(children: [const Expanded(child: Text('Nutrition', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink))), IconButton(onPressed: _chooseDate, tooltip: 'Choose date', icon: const Icon(Icons.calendar_month_rounded, color: _ink))]),
           const SizedBox(height: 8),
-          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)), child: Row(children: [
+          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(18)), child: Row(children: [
             IconButton(onPressed: () => _moveDate(-1), icon: const Icon(Icons.chevron_left_rounded)),
             Expanded(child: InkWell(onTap: _chooseDate, borderRadius: BorderRadius.circular(12), child: Padding(padding: const EdgeInsets.symmetric(vertical: 10), child: Text(today ? 'Today' : MaterialLocalizations.of(context).formatMediumDate(_date), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _ink))))),
             IconButton(onPressed: today ? null : () => _moveDate(1), icon: const Icon(Icons.chevron_right_rounded)),
           ])),
           const SizedBox(height: 16),
-          Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)), child: Row(children: [
+          Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(24)), child: Row(children: [
             SizedBox(width: 124, height: 124, child: Stack(alignment: Alignment.center, children: [
-              SizedBox.expand(child: CircularProgressIndicator(value: (total / 2000).clamp(0.0, 1.0).toDouble(), strokeWidth: 10, backgroundColor: const Color(0xFFE7EAE4), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
+              SizedBox.expand(child: CircularProgressIndicator(value: (total / 2000).clamp(0.0, 1.0).toDouble(), strokeWidth: 10, backgroundColor: const Color(0xFF27332B), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
               Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFFA52D), size: 20), const SizedBox(height: 3), Text(total.toString(), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _ink)), const Text('of 2,000 kcal', style: TextStyle(fontSize: 10, color: _muted))]),
             ])),
             const SizedBox(width: 17),
@@ -72,7 +72,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
           Row(children: [
             Expanded(child: _MealCategory(icon: Icons.wb_sunny_outlined, title: 'Breakfast', calories: _categoryTotal(meals, 'Breakfast'), color: const Color(0xFFFFF0D9))),
             const SizedBox(width: 8),
-            Expanded(child: _MealCategory(icon: Icons.lunch_dining_outlined, title: 'Lunch', calories: _categoryTotal(meals, 'Lunch'), color: const Color(0xFFEAF6D9))),
+            Expanded(child: _MealCategory(icon: Icons.lunch_dining_outlined, title: 'Lunch', calories: _categoryTotal(meals, 'Lunch'), color: const Color(0xFF25351D))),
             const SizedBox(width: 8),
             Expanded(child: _MealCategory(icon: Icons.nights_stay_outlined, title: 'Dinner', calories: _categoryTotal(meals, 'Dinner'), color: const Color(0xFFE7F1F0))),
           ]),
@@ -93,7 +93,7 @@ int _categoryTotal(List<Meal> meals, String category) => meals.where((m) => m.ca
 class _MealCategory extends StatelessWidget {
   const _MealCategory({required this.icon, required this.title, required this.calories, required this.color});
   final IconData icon; final String title; final int calories; final Color color;
-  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)), child: Column(children: [
+  @override Widget build(BuildContext context) => Container(padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(18)), child: Column(children: [
     Container(width: 34, height: 34, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 19, color: _ink)),
     const SizedBox(height: 7), Text(calories.toString(), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: _ink)), Text(title, style: const TextStyle(fontSize: 10, color: _muted)),
   ]));
@@ -115,8 +115,8 @@ class _MealCard extends StatelessWidget {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to delete meal. Please try again.')));
     }
   }
-  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 9), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(19)), child: Row(children: [
-    Container(width: 48, height: 48, decoration: BoxDecoration(color: const Color(0xFFF0F3EC), borderRadius: BorderRadius.circular(16)), child: Icon(_mealIcon(meal.category), color: _ink, size: 23)),
+  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 9), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(19)), child: Row(children: [
+    Container(width: 48, height: 48, decoration: BoxDecoration(color: const Color(0xFF202922), borderRadius: BorderRadius.circular(16)), child: Icon(_mealIcon(meal.category), color: _ink, size: 23)),
     const SizedBox(width: 11),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(meal.foodName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, color: _ink, fontSize: 13)),

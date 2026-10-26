@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 
-const _lime = Color(0xFF84E221);
-const _ink = Color(0xFF232824);
-const _muted = Color(0xFF858C83);
-const _bg = Color(0xFFF6F7F4);
+const _lime = Color(0xFF9BFF3D);
+const _ink = Color(0xFFF4F7F1);
+const _bg = Color(0xFF080D0B);
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -60,16 +59,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override Widget build(BuildContext context) => Scaffold(
     backgroundColor: _bg,
-    appBar: AppBar(backgroundColor: _bg, title: const Text('Create account', style: TextStyle(fontWeight: FontWeight.w800))),
+    appBar: AppBar(backgroundColor: _bg, title: const Text('Create account', style: TextStyle(fontWeight: FontWeight.w800, color: _ink))),
     body: SafeArea(child: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
       child: Form(key: _formKey, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Container(height: 136, decoration: BoxDecoration(color: _ink, borderRadius: BorderRadius.circular(24)), child: Stack(children: [
+        Container(height: 136, decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(24), border: Border.all(color: const Color(0xFF27332B))), child: Stack(children: [
           Positioned(right: -15, top: -50, child: Container(width: 170, height: 170, decoration: BoxDecoration(color: _lime.withValues(alpha: 0.17), shape: BoxShape.circle))),
           const Padding(padding: EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(Icons.bolt_rounded, color: _lime, size: 29),
             SizedBox(height: 8),
-            Text('Start your FitTrack journey', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+            Text('Start your FitTrack journey', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _ink)),
             Text('A healthier routine starts with you.', style: TextStyle(fontSize: 12, color: Color(0xFFD5D9D2))),
           ])),
         ])),
