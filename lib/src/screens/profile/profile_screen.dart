@@ -136,7 +136,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                       IconButton(
                         tooltip: 'Account settings',
                         onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You can update your personal details below.'))),
-                        icon: const Icon(Icons.settings_outlined, color: Color(0xFF232824)),
+                        icon: const Icon(Icons.settings_outlined, color: Color(0xFF9AA69C)),
                       ),
                     ],
                   ),
@@ -151,7 +151,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                           backgroundColor: const Color(0xFF25351D),
                           child: Text(
                             _nameController.text.trim().isEmpty ? 'U' : _nameController.text.trim()[0].toUpperCase(),
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF232824)),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF9BFF3D)),
                           ),
                         ),
                         const SizedBox(width: 14),
