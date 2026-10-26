@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'register_screen.dart';
 
-const _lime = Color(0xFF84E221);
-const _ink = Color(0xFF232824);
-const _muted = Color(0xFF858C83);
-const _bg = Color(0xFFF6F7F4);
+const _lime = Color(0xFF9BFF3D);
+const _ink = Color(0xFFF4F7F1);
+const _muted = Color(0xFF9AA69C);
+const _bg = Color(0xFF080D0B);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
