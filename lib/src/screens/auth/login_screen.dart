@@ -152,10 +152,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     height: 44,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 44),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          height: 1.25,
+                        ),
+                      ),
                       onPressed: _isLoading ? null : _signIn,
                       child: _isLoading
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: _ink))
-                          : const Text('Login'),
+                          : const Center(child: Text('Login', textHeightBehavior: TextHeightBehavior(applyHeightToFirstAscent: false, applyHeightToLastDescent: false))),
                     ),
                   ),
                   const SizedBox(height: 18),
