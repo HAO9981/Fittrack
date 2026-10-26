@@ -64,7 +64,7 @@ class _DashboardContent extends StatelessWidget {
       const SizedBox(height: 18),
       Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: ink, borderRadius: BorderRadius.circular(24), gradient: const LinearGradient(colors: [Color(0xFF202720), Color(0xFF101710)])), child: Row(children: [
         SizedBox(width: 102, height: 102, child: Stack(alignment: Alignment.center, children: [const SizedBox.expand(child: CircularProgressIndicator(value: .72, strokeWidth: 9, backgroundColor: Color(0xFF34452E), valueColor: AlwaysStoppedAnimation<Color>(lime))), const Icon(Icons.directions_run_rounded, size: 34, color: surface)])),
-        const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Today's Activity", style: TextStyle(color: surface70, fontSize: 12)), const SizedBox(height: 8), Text('$mins min', style: const TextStyle(color: surface, fontSize: 26, fontWeight: FontWeight.w800)), Text('$cals kcal logged', style: const TextStyle(color: surface)), const SizedBox(height: 8), Text(todaysWorkouts.length.toString() + ' workout(s) completed', style: const TextStyle(color: Color(0xFFB8C7B8), fontSize: 11))]))
+        const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Today's Activity", style: TextStyle(color: muted, fontSize: 12)), const SizedBox(height: 8), Text('$mins min', style: const TextStyle(color: surface, fontSize: 26, fontWeight: FontWeight.w800)), Text('$cals kcal logged', style: const TextStyle(color: surface)), const SizedBox(height: 8), Text(todaysWorkouts.length.toString() + ' workout(s) completed', style: const TextStyle(color: Color(0xFFB8C7B8), fontSize: 11))]))
       ])),
       const SizedBox(height: 12),
       if (profile?.weightKg != null || profile?.targetWeightKg != null) ...[
@@ -87,7 +87,7 @@ class _DashboardContent extends StatelessWidget {
           decoration: BoxDecoration(
             color: surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const border),
+            border: Border.all(color: border),
           ),
           child: Row(children: [
             Container(
