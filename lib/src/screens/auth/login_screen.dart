@@ -174,7 +174,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       _SocialSignInButton(icon: Icons.facebook_rounded, label: 'Facebook', onTap: () => _showMessage('Facebook sign-in is not configured yet.')),
                     ],
                   ),
-                  const Spacer(),
                   const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
