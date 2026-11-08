@@ -6,6 +6,7 @@ import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
 import 'add_workout_screen.dart';
 import 'edit_workout_screen.dart';
+import 'push_up_counter_screen.dart';
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -20,9 +21,19 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   void initState() {
     super.initState();
-    // Keep one Firestore stream for the lifetime of this screen instead of
-    // recreating the query on every widget rebuild.
     _workoutsStream = WorkoutService.instance.getWorkouts();
+  }
+
+  void _openAiCounter() {
+    if (FirebaseAuthService.instance.currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to use the AI counter.')),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PushUpCounterScreen()),
+    );
   }
 
   @override
@@ -42,7 +53,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     : 'Unable to load workouts. Please try again.',
               );
             }
-
             final workouts = snapshot.data ?? [];
             if (workouts.isEmpty) {
               return const AppEmptyState(
@@ -51,25 +61,42 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 message: 'Add your first workout to start building your fitness history.',
               );
             }
-
             return ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
               itemCount: workouts.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) => _WorkoutCard(workout: workouts[index]),
             );
           },
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            if (FirebaseAuthService.instance.currentUser == null) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to add a workout.')));
-              return;
-            }
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddWorkoutScreen()));
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Add Workout'),
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            FloatingActionButton.extended(
+              heroTag: 'ai_push_up_counter',
+              onPressed: _openAiCounter,
+              icon: const Icon(Icons.camera_alt_outlined),
+              label: const Text('AI Push-up Counter'),
+            ),
+            const SizedBox(height: 12),
+            FloatingActionButton.extended(
+              heroTag: 'add_workout',
+              onPressed: () {
+                if (FirebaseAuthService.instance.currentUser == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please sign in to add a workout.')),
+                  );
+                  return;
+                }
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AddWorkoutScreen()),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Add Workout'),
+            ),
+          ],
         ),
       );
 }
@@ -114,7 +141,6 @@ class _WorkoutCard extends StatelessWidget {
       ),
     );
     if (shouldDelete != true || !context.mounted) return;
-
     try {
       await WorkoutService.instance.deleteWorkout(workout.id);
       if (context.mounted) {
@@ -140,7 +166,9 @@ class _WorkoutCard extends StatelessWidget {
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text(
-              '${workout.category} - ${workout.duration} min\n${MaterialLocalizations.of(context).formatMediumDate(workout.date)}',
+              '${workout.category} - ${workout.duration} min'
+              '${workout.reps == null ? '' : ' - ${workout.reps} reps'}\n'
+              '${MaterialLocalizations.of(context).formatMediumDate(workout.date)}',
             ),
           ),
           isThreeLine: true,
