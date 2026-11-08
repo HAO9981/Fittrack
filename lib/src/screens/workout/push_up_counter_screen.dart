@@ -26,6 +26,7 @@ class _PushUpCounterScreenState extends State<PushUpCounterScreen> {
   bool _isProcessing = false;
   bool _isRunning = false;
   bool _isSaving = false;
+  bool _hasStarted = false;
   String? _error;
   int _reps = 0;
   int _elapsedSeconds = 0;
@@ -172,7 +173,8 @@ class _PushUpCounterScreenState extends State<PushUpCounterScreen> {
   void _start() {
     if (_cameraController == null || _isRunning) return;
     setState(() {
-      _reps = _elapsedSeconds == 0 ? 0 : _reps;
+      if (!_hasStarted) _reps = 0;
+      _hasStarted = true;
       _stage = 'up';
       _elbowAngle = null;
       _isRunning = true;
@@ -188,7 +190,10 @@ class _PushUpCounterScreenState extends State<PushUpCounterScreen> {
     if (!_isRunning) return;
     _stopwatch.stop();
     _clock?.cancel();
-    setState(() => _isRunning = false);
+    setState(() {
+      _isRunning = false;
+      _elapsedSeconds = _stopwatch.elapsed.inSeconds;
+    });
   }
 
   Future<void> _finish() async {
@@ -200,7 +205,7 @@ class _PushUpCounterScreenState extends State<PushUpCounterScreen> {
         id: '',
         name: 'AI Push-up',
         category: 'Strength',
-        duration: math.max(1, (_elapsedSeconds / 60).ceil()),
+        duration: _elapsedSeconds < 60 ? 1 : (_elapsedSeconds / 60).ceil(),
         date: DateTime.now(),
         reps: _reps,
       ));
