@@ -8,6 +8,7 @@ class Workout {
     required this.duration,
     required this.date,
     this.createdAt,
+    this.reps,
   });
 
   final String id;
@@ -16,6 +17,7 @@ class Workout {
   final int duration;
   final DateTime date;
   final Timestamp? createdAt;
+  final int? reps;
 
   Map<String, dynamic> toMap() => {
         'name': name,
@@ -23,6 +25,7 @@ class Workout {
         'duration': duration,
         'date': Timestamp.fromDate(date),
         if (createdAt != null) 'createdAt': createdAt,
+        if (reps != null) 'reps': reps,
       };
 
   factory Workout.fromFirestore(DocumentSnapshot<Map<String, dynamic>> document) {
@@ -34,6 +37,7 @@ class Workout {
       duration: (data['duration'] as num?)?.toInt() ?? 0,
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdAt: data['createdAt'] as Timestamp?,
+      reps: (data['reps'] as num?)?.toInt(),
     );
   }
 }
