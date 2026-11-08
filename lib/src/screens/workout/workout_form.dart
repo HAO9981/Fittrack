@@ -66,6 +66,7 @@ class _WorkoutFormState extends State<WorkoutForm> {
       duration: int.parse(_durationController.text),
       date: _date,
       createdAt: widget.workout?.createdAt,
+      reps: widget.workout?.reps,
     );
 
     try {
