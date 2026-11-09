@@ -7,6 +7,7 @@ import '../../widgets/app_empty_state.dart';
 import 'add_workout_screen.dart';
 import 'edit_workout_screen.dart';
 import 'push_up_counter_screen.dart';
+import 'push_up_video_analysis_screen.dart';
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -73,6 +74,23 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            FloatingActionButton.extended(
+              heroTag: 'ai_push_up_video',
+              onPressed: () {
+                if (FirebaseAuthService.instance.currentUser == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please sign in to analyze a video.')),
+                  );
+                  return;
+                }
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PushUpVideoAnalysisScreen()),
+                );
+              },
+              icon: const Icon(Icons.video_library_outlined),
+              label: const Text('Upload Push-up Video'),
+            ),
+            const SizedBox(height: 12),
             FloatingActionButton.extended(
               heroTag: 'ai_push_up_counter',
               onPressed: _openAiCounter,
