@@ -153,6 +153,33 @@ class _MealFormState extends State<MealForm> {
     );
   }
 
+  Future<void> _removeFavorite(FoodFavorite favorite) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Remove favorite?'),
+        content: Text('Remove ${favorite.name} from your favorite foods?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Remove')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await FoodFavoriteService.instance.removeFavorite(favorite.name);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Favorite removed.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to remove favorite. Please try again.')),
+      );
+    }
+  }
+
   Future<void> _saveCurrentAsFavorite() async {
     final name = _foodNameController.text.trim();
     final calories = int.tryParse(_caloriesController.text.trim());
@@ -363,6 +390,7 @@ class _MealFormState extends State<MealForm> {
                                   final favorite = favorites[index];
                                   return InkWell(
                                     onTap: _isSaving || _isAnalyzing ? null : () => _applyFavorite(favorite),
+                                    onLongPress: _isSaving || _isAnalyzing ? null : () => _removeFavorite(favorite),
                                     borderRadius: BorderRadius.circular(12),
                                     child: Container(
                                       width: 126,
