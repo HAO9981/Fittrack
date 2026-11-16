@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import '../../navigation/app_navigation.dart';
 
 const _lime = Color(0xFF9BFF3D);
 const _ink = Color(0xFFF4F7F1);
@@ -245,7 +246,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
     return Scaffold(
       backgroundColor: _bg,
       body: SafeArea(child: ListView(padding: const EdgeInsets.fromLTRB(18, 14, 18, 28), children: [
-        const Text('Gym Finder', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink)),
+        Row(children: [IconButton(tooltip: 'Open navigation menu', onPressed: AppNavigation.openDrawer, icon: const Icon(Icons.menu_rounded, color: _ink, size: 25)), const Expanded(child: Text('Gym Finder', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink)))]),
         const SizedBox(height: 5),
         const Text('Find a place that fits your routine.', style: TextStyle(fontSize: 13, color: _muted)),
         const SizedBox(height: 18),
