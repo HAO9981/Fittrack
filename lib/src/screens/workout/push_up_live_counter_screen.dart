@@ -28,6 +28,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
   Timer? _clock;
   bool _initializing = true;
   bool _running = false;
+  bool _paused = false;
   bool _processingFrame = false;
   bool _saving = false;
   String? _error;
@@ -36,6 +37,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
   int _downFrames = 0;
   int _upFrames = 0;
   String _stage = 'up';
+  double? _currentAngle;
   DateTime? _lastRepAt;
 
   @override
@@ -90,6 +92,8 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
     if (camera == null || !camera.value.isInitialized || _running) return;
     setState(() {
       _running = true;
+      _paused = false;
+      _currentAngle = null;
       _reps = 0;
       _elapsedSeconds = 0;
       _downFrames = 0;
@@ -139,6 +143,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
       if (!_running || !mounted || poses.isEmpty) return;
       final angle = _elbowAngle(poses.first);
       if (angle == null) return;
+      _currentAngle = angle;
 
       if (angle < 95) {
         _downFrames++;
@@ -191,13 +196,39 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
     return left < right ? left : right;
   }
 
+  Future<void> _pauseCounter() async {
+    final camera = _camera;
+    if (!_running || _paused) return;
+    _clock?.cancel();
+    if (camera != null && camera.value.isStreamingImages) {
+      await camera.stopImageStream();
+    }
+    if (mounted) setState(() => _paused = true);
+  }
+
+  Future<void> _resumeCounter() async {
+    final camera = _camera;
+    if (!_running || !_paused || camera == null) return;
+    try {
+      await camera.startImageStream(_processCameraImage);
+      if (!mounted) return;
+      setState(() => _paused = false);
+      _clock?.cancel();
+      _clock = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted && _running && !_paused) setState(() => _elapsedSeconds++);
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = 'Unable to resume live counting.\\n$error');
+    }
+  }
+
   Future<void> _stopCounter() async {
     final camera = _camera;
     _clock?.cancel();
     if (camera != null && camera.value.isStreamingImages) {
       await camera.stopImageStream();
     }
-    if (mounted) setState(() => _running = false);
+    if (mounted) setState(() { _running = false; _paused = false; });
   }
 
   Future<void> _saveWorkout() async {
@@ -302,7 +333,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
                       Icon(_running ? Icons.sensors_rounded : Icons.info_outline, color: _lime),
                       const SizedBox(width: 9),
                       Expanded(child: Text(
-                        !_running ? 'Ready to start' : _stage == 'down' ? 'Down position detected — push back up' : 'Ready position — lower your body',
+                        !_running ? 'Ready to start' : _paused ? 'Paused — resume when ready' : _stage == 'down' ? 'Down position detected — push back up' : 'Ready position — lower your body',
                         style: const TextStyle(color: _ink, fontSize: 12, fontWeight: FontWeight.w600),
                       )),
                       if (_running) const SizedBox(width: 8),
@@ -321,13 +352,31 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: const Text('Start Live Counting'),
                     )
-                  else
-                    FilledButton.icon(
-                      onPressed: _stopCounter,
-                      style: FilledButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15)),
-                      icon: const Icon(Icons.stop_rounded),
-                      label: const Text('Stop Counting'),
-                    ),
+                  else ...[
+                    Row(children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _paused ? _resumeCounter : _pauseCounter,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _lime,
+                            side: const BorderSide(color: _lime),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: Icon(_paused ? Icons.play_arrow_rounded : Icons.pause_rounded),
+                          label: Text(_paused ? 'Resume' : 'Pause'),
+                        ),
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: _stopCounter,
+                          style: FilledButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+                          icon: const Icon(Icons.stop_rounded),
+                          label: const Text('Stop'),
+                        ),
+                      ),
+                    ]),
+                  ],
                   const SizedBox(height: 9),
                   OutlinedButton.icon(
                     onPressed: !_running && _reps > 0 && !_saving ? _saveWorkout : null,
