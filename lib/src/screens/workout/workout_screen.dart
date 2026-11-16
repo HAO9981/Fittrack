@@ -10,6 +10,7 @@ import 'edit_workout_screen.dart';
 import 'workout_categories_screen.dart';
 import 'push_up_video_analysis_screen.dart';
 import 'push_up_recording_screen.dart';
+import 'push_up_live_counter_screen.dart';
 import 'workout_detail_screen.dart';
 import 'workout_progress_screen.dart';
 import 'workout_recommendations_screen.dart';
@@ -323,6 +324,21 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         label: const Text('Record Video', style: TextStyle(fontSize: 11)),
                       )),
                     ]),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => const PushUpLiveCounterScreen())),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _lime,
+                          side: const BorderSide(color: _border),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        icon: const Icon(Icons.sensors_rounded, size: 17),
+                        label: const Text('Live Rep Counter', style: TextStyle(fontSize: 11)),
+                      ),
+                    ),
                   ],
                 ),
               ),
