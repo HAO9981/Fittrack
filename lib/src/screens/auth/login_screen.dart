@@ -176,15 +176,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     Expanded(child: Divider(color: Color(0xFF27332B))),
                   ]),
                   const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _SocialSignInButton(icon: Icons.g_mobiledata_rounded, label: 'Google', onTap: () => _showMessage('Google sign-in is not configured yet.')),
-                      const SizedBox(width: 16),
-                      _SocialSignInButton(icon: Icons.apple, label: 'Apple', onTap: () => _showMessage('Apple sign-in is not configured yet.')),
-                      const SizedBox(width: 16),
-                      _SocialSignInButton(icon: Icons.facebook_rounded, label: 'Facebook', onTap: () => _showMessage('Facebook sign-in is not configured yet.')),
-                    ],
+                  Center(
+                    child: _SocialSignInButton(
+                      icon: Icons.g_mobiledata_rounded,
+                      label: 'Google',
+                      onTap: () => _showMessage('Google sign-in is not configured yet.'),
+                    ),
                   ),
                   const SizedBox(height: 28),
                   Row(
