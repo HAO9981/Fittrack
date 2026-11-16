@@ -17,7 +17,9 @@ const _surface = Color(0xFF141B17);
 const _border = Color(0xFF27332B);
 
 class PushUpVideoAnalysisScreen extends StatefulWidget {
-  const PushUpVideoAnalysisScreen({super.key});
+  const PushUpVideoAnalysisScreen({super.key, this.initialVideoPath});
+
+  final String? initialVideoPath;
 
   @override
   State<PushUpVideoAnalysisScreen> createState() => _PushUpVideoAnalysisScreenState();
@@ -46,19 +48,23 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
         model: PoseDetectionModel.base,
       ),
     );
+    final initialPath = widget.initialVideoPath;
+    if (initialPath != null) _loadVideo(initialPath);
   }
 
-  Future<void> _pickVideo() async {
+  Future<void> _loadVideo(String path) async {
     try {
-      final picked = await _picker.pickVideo(source: ImageSource.gallery);
-      if (picked == null || !mounted) return;
-      final controller = VideoPlayerController.file(File(picked.path));
+      final controller = VideoPlayerController.file(File(path));
       await controller.initialize();
       await controller.setLooping(false);
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
       final previous = _videoController;
       setState(() {
         _videoController = controller;
-        _videoPath = picked.path;
+        _videoPath = path;
         _durationSeconds = controller.value.duration.inSeconds;
         _error = null;
         _reps = 0;
@@ -67,6 +73,16 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
         _stage = 'up';
       });
       await previous?.dispose();
+    } catch (error) {
+      if (mounted) setState(() => _error = 'Unable to open this video. Choose another clip.\\n$error');
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    try {
+      final picked = await _picker.pickVideo(source: ImageSource.gallery);
+      if (picked == null || !mounted) return;
+      await _loadVideo(picked.path);
     } catch (error) {
       if (mounted) setState(() => _error = 'Unable to open this video. Choose another clip.\n$error');
     }
