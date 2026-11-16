@@ -16,6 +16,7 @@ import 'workout_recommendations_screen.dart';
 import 'workout_goals_screen.dart';
 import 'workout_calendar_screen.dart';
 import '../ai/ai_assistant_screen.dart';
+import '../../navigation/app_navigation.dart';
 
 const _lime = Color(0xFF9BFF3D);
 const _ink = Color(0xFFF4F7F1);
@@ -118,6 +119,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             children: [
               Row(
                 children: [
+                  IconButton(tooltip: 'Open navigation menu', onPressed: AppNavigation.openDrawer, icon: const Icon(Icons.menu_rounded, color: _ink, size: 25)),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
