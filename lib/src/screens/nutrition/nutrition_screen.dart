@@ -8,6 +8,7 @@ import '../../widgets/app_empty_state.dart';
 import 'add_meal_screen.dart';
 import 'edit_meal_screen.dart';
 import 'weekly_nutrition_report_screen.dart';
+import 'food_history_screen.dart';
 import '../../navigation/app_navigation.dart';
 
 const _lime = Color(0xFF9BFF3D);
@@ -52,6 +53,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
           Row(children: [
             IconButton(tooltip: 'Open navigation menu', onPressed: AppNavigation.openDrawer, icon: const Icon(Icons.menu_rounded, color: _ink)),
             const Expanded(child: Text('Nutrition', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink))),
+            IconButton(
+              tooltip: 'Food history',
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FoodHistoryScreen())),
+              icon: const Icon(Icons.history_rounded, color: _ink),
+            ),
             IconButton(
               tooltip: 'Weekly nutrition report',
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WeeklyNutritionReportScreen())),
