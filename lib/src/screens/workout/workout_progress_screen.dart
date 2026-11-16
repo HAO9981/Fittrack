@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/workout.dart';
 
@@ -76,6 +78,8 @@ class WorkoutProgressScreen extends StatelessWidget {
               const SizedBox(width: 9),
               Expanded(child: _ProgressMetric(label: 'TOTAL REPS', value: '$weekReps', icon: Icons.repeat_rounded)),
             ]),
+            const SizedBox(height: 14),
+            _WeeklyGoalProgress(workouts: currentWeek, weekMinutes: weekMinutes),
             const SizedBox(height: 18),
             Container(
               padding: const EdgeInsets.all(16),
@@ -215,4 +219,59 @@ class _TotalRow extends StatelessWidget {
       Text(value, style: const TextStyle(color: _ink, fontSize: 13, fontWeight: FontWeight.w700)),
     ]),
   );
+}
+
+
+class _WeeklyGoalProgress extends StatelessWidget {
+  const _WeeklyGoalProgress({required this.workouts, required this.weekMinutes});
+  final List<Workout> workouts;
+  final int weekMinutes;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const SizedBox.shrink();
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+      builder: (context, snapshot) {
+        final data = snapshot.data?.data();
+        final sessionGoal = (data?['workoutGoalSessionsPerWeek'] as num?)?.toInt() ?? 3;
+        final minuteGoal = (data?['workoutGoalMinutesPerWeek'] as num?)?.toInt() ?? 150;
+        final sessionProgress = (workouts.length / sessionGoal).clamp(0.0, 1.0);
+        final minuteProgress = (weekMinutes / minuteGoal).clamp(0.0, 1.0);
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: _border)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('WEEKLY GOALS', style: TextStyle(color: _lime, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+            const SizedBox(height: 13),
+            _GoalProgressLine(label: 'Workout sessions', current: workouts.length, target: sessionGoal, progress: sessionProgress, unit: 'sessions'),
+            const SizedBox(height: 16),
+            _GoalProgressLine(label: 'Training time', current: weekMinutes, target: minuteGoal, progress: minuteProgress, unit: 'min'),
+            if (snapshot.hasError)
+              const Padding(padding: EdgeInsets.only(top: 8), child: Text('Unable to refresh saved goals.', style: TextStyle(color: Colors.orangeAccent, fontSize: 10))),
+          ]),
+        );
+      },
+    );
+  }
+}
+
+class _GoalProgressLine extends StatelessWidget {
+  const _GoalProgressLine({required this.label, required this.current, required this.target, required this.progress, required this.unit});
+  final String label, unit;
+  final int current, target;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Row(children: [
+      Expanded(child: Text(label, style: const TextStyle(color: _ink, fontSize: 12, fontWeight: FontWeight.w700))),
+      Text('$current / $target $unit', style: const TextStyle(color: _muted, fontSize: 11)),
+    ]),
+    const SizedBox(height: 8),
+    ClipRRect(borderRadius: BorderRadius.circular(20), child: LinearProgressIndicator(value: progress, minHeight: 9, backgroundColor: _border, valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
+    const SizedBox(height: 4),
+    Text('${(progress * 100).round()}% completed', style: const TextStyle(color: _muted, fontSize: 10)),
+  ]);
 }
