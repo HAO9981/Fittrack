@@ -332,7 +332,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           builder: (_) => const PushUpLiveCounterScreen())),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: _lime,
-                          side: BorderSide(color: _border),
+                          side: const BorderSide(color: Color(0xFF27332B)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         icon: const Icon(Icons.sensors_rounded, size: 17),
