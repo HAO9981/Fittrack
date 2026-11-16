@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../models/workout.dart';
 import '../../services/auth_service.dart';
@@ -65,12 +66,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           initialSets: preset?.sets,
           initialReps: preset?.reps,
           initialDuration: preset?.duration,
-          initialDurationUnit: preset?.durationUnit ?? 'minutes',
-        ),
-      ),
-    );
-  }
-
+          initialDurationUnit: preset?.dura
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: _bg,
@@ -78,9 +74,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       child: StreamBuilder<List<Workout>>(
         stream: _workoutsStream,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: _lime));
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -89,27 +86,34 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                       ? 'Please sign in to view your workouts.'
                       : 'Unable to load workouts. Please try again.',
                   textAlign: TextAlign.center,
+                  style: const TextStyle(color: _ink),
                 ),
               ),
             );
+          }
+
           final all = snapshot.data ?? <Workout>[];
+          final today = DateTime.now();
+          final date = DateTime(today.year, today.month, today.day);
+          final weekStart = date.subtract(Duration(days: date.weekday - 1));
+          final weekEnd = weekStart.add(const Duration(days: 7));
+          final thisWeek = all.where((w) =>
+              !w.date.isBefore(weekStart) && w.date.isBefore(weekEnd)).toList();
+          final weekMinutes = thisWeek.fold<int>(
+              0, (sum, workout) => sum + workout.durationInMinutes);
           final filtered = all.where((w) {
-            final matchesCategory =
-                _filter == 'All' ||
+            final categoryMatch = _filter == 'All' ||
                 w.category.toLowerCase() == _filter.toLowerCase();
             final query = _searchQuery.trim().toLowerCase();
-            final matchesSearch =
-                query.isEmpty ||
+            final searchMatch = query.isEmpty ||
                 w.name.toLowerCase().contains(query) ||
                 w.category.toLowerCase().contains(query);
-            return matchesCategory && matchesSearch;
+            return categoryMatch && searchMatch;
           }).toList();
-          final minutes = all.fold<int>(
-            0,
-            (sum, w) => sum + w.durationInMinutes,
-          );
+          final user = FirebaseAuthService.instance.currentUser;
+
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 112),
             children: [
               Row(
                 children: [
@@ -117,19 +121,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Workout',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.w800,
-                            color: _ink,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Track your workouts and stay consistent',
-                          style: TextStyle(fontSize: 11, color: _muted),
-                        ),
+                        Text('Workout', style: TextStyle(
+                          fontSize: 26, fontWeight: FontWeight.w800, color: _ink)),
+                        SizedBox(height: 3),
+                        Text('Track your workouts and stay consistent',
+                            style: TextStyle(fontSize: 11, color: _muted)),
                       ],
                     ),
                   ),
@@ -139,503 +135,391 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     child: InkWell(
                       onTap: _add,
                       borderRadius: BorderRadius.circular(16),
-                      child: const SizedBox(
-                        width: 46,
-                        height: 46,
-                        child: Icon(
-                          Icons.add_rounded,
-                          color: Color(0xFF080D0B),
-                          size: 27,
-                        ),
-                      ),
+                      child: const SizedBox(width: 48, height: 48,
+                          child: Icon(Icons.add_rounded, color: _bg, size: 28)),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Material(
-                color: const Color(0xFF141B17),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WorkoutProgressScreen(workouts: all),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
+              const SizedBox(height: 16),
+
+              // Weekly totals are calculated from saved records; the target is read from the user's profile document.
+              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: user == null ? null : FirebaseFirestore.instance
+                    .collection('users').doc(user.uid).snapshots(),
+                builder: (context, goalSnapshot) {
+                  final data = goalSnapshot.data?.data();
+                  final target = (data?['workoutGoalSessionsPerWeek'] as num?)?.toInt() ?? 3;
+                  final safeTarget = target < 1 ? 1 : target;
+                  final progress = (thisWeek.length / safeTarget).clamp(0.0, 1.0);
+                  final weekLastDay = weekEnd.subtract(const Duration(days: 1));
+                  return Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF526B3D)),
+                      color: const Color(0xFF141B17),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFF304332)),
                     ),
-                    child: const Row(
+                    child: Column(
                       children: [
-                        Icon(Icons.insights_rounded, color: _lime, size: 24),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Workout Progress', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
-                              SizedBox(height: 3),
-                              Text('View weekly activity and training trends', style: TextStyle(color: _muted, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 9),
-              Material(
-                color: const Color(0xFF141B17),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WorkoutRecommendationsScreen(workouts: all),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF27332B)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.auto_awesome_rounded, color: _lime, size: 25),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Workout Recommendations', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
-                              SizedBox(height: 3),
-                              Text('Get training suggestions from your workout history', style: TextStyle(color: _muted, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 9),
-              Material(
-                color: const Color(0xFF141B17),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AiAssistantScreen(),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF27332B)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.forum_rounded, color: _lime, size: 25),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Ask FitTrack AI', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
-                              SizedBox(height: 3),
-                              Text('Get advice using your profile and recent activity', style: TextStyle(color: _muted, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 9),
-              Material(
-                color: const Color(0xFF141B17),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const WorkoutGoalsScreen()),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF27332B)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.flag_rounded, color: _lime, size: 25),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Workout Goals', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
-                              SizedBox(height: 3),
-                              Text('Set weekly workout and training-time targets', style: TextStyle(color: _muted, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 9),
-              Material(
-                color: const Color(0xFF141B17),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WorkoutCalendarScreen(workouts: all),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF27332B)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.calendar_month_rounded, color: _lime, size: 25),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Workout Calendar', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
-                              SizedBox(height: 3),
-                              Text('Browse workouts by date and month', style: TextStyle(color: _muted, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF141B17),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _topTab(
-                        'My Workouts',
-                        !_showExercises,
-                        () => setState(() => _showExercises = false),
-                      ),
-                    ),
-                    Expanded(
-                      child: _topTab(
-                        'Exercises',
-                        _showExercises,
-                        () => setState(() => _showExercises = true),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Material(
-                color: const Color(0xFF141B17),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const PushUpVideoAnalysisScreen(),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF526B3D)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.auto_awesome_rounded, color: _lime, size: 25),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('AI Push-up Analysis', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
-                              SizedBox(height: 3),
-                              Text('Upload a video to count your reps', style: TextStyle(color: _muted, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 9),
-              Material(
-                color: const Color(0xFF141B17),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const PushUpRecordingScreen(),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF27332B)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.videocam_rounded, color: _lime, size: 25),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('AI Camera Recording', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
-                              SizedBox(height: 3),
-                              Text('Record a set, then analyze your reps', style: TextStyle(color: _muted, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onChanged: (value) => setState(() => _searchQuery = value),
-                style: const TextStyle(color: _ink, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'Search workouts...',
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  suffixIcon: _searchQuery.isEmpty
-                      ? null
-                      : IconButton(
-                          tooltip: 'Clear search',
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                            _searchFocusNode.requestFocus();
-                          },
-                          icon: const Icon(Icons.close_rounded),
-                        ),
-                  filled: true,
-                  fillColor: const Color(0xFF141B17),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF27332B)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFF27332B)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: _lime),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              StreamBuilder<WorkoutCategorySettings>(
-                stream: _categorySettingsStream,
-                builder: (context, categoriesSnapshot) {
-                  final settings =
-                      categoriesSnapshot.data ??
-                      const WorkoutCategorySettings();
-                  final available = <String>{
-                    ...WorkoutCategoryService.systemCategories,
-                    ...settings.custom,
-                    ...all.map((workout) => workout.category),
-                  };
-                  final filters = [
-                    'All',
-                    ...available.where(
-                      (category) => !settings.hidden.contains(category),
-                    ),
-                  ];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              'Categories',
-                              style: TextStyle(
-                                color: _muted,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_month_rounded, color: _lime, size: 20),
+                            const SizedBox(width: 9),
+                            const Expanded(child: Text('This Week', style: TextStyle(
+                              color: _ink, fontSize: 16, fontWeight: FontWeight.w800))),
+                            Text(
+                              '${_monthShort(weekStart.month)} ${weekStart.day} – ${_monthShort(weekLastDay.month)} ${weekLastDay.day}',
+                              style: const TextStyle(color: _muted, fontSize: 10),
                             ),
-                          ),
-                          TextButton.icon(
-                            onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => WorkoutCategoriesScreen(
-                                  legacyCategories: all
-                                      .map((w) => w.category)
-                                      .toSet()
-                                      .toList(),
-                                ),
-                              ),
-                            ),
-                            icon: const Icon(Icons.tune_rounded, size: 16),
-                            label: const Text('Edit Categories'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: _lime,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: filters.map((f) {
-                            final selected = _filter == f;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ChoiceChip(
-                                label: Text(f),
-                                selected: selected,
-                                onSelected: (_) => setState(() => _filter = f),
-                                backgroundColor: const Color(0xFF27332B),
-                                selectedColor: _lime,
-                                side: BorderSide.none,
-                                showCheckmark: false,
-                                shape: const StadiumBorder(),
-                                labelStyle: TextStyle(
-                                  fontSize: 12,
-                                  color: selected
-                                      ? const Color(0xFF080D0B)
-                                      : _ink,
-                                  fontWeight: selected
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(child: _WeeklyMetric(
+                              icon: Icons.directions_run_rounded,
+                              value: thisWeek.length.toString(), label: 'Workouts')),
+                            Container(width: 1, height: 48, color: const Color(0xFF304035)),
+                            Expanded(child: _WeeklyMetric(
+                              icon: Icons.schedule_rounded,
+                              value: weekMinutes.toString(), label: 'Minutes')),
+                            Container(width: 1, height: 48, color: const Color(0xFF304035)),
+                            Expanded(child: _WeeklyMetric(
+                              icon: Icons.track_changes_rounded,
+                              value: '${thisWeek.length}/${safeTarget}', label: 'Goal')),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: LinearProgressIndicator(
+                            value: progress, minHeight: 8,
+                            backgroundColor: const Color(0xFF354039),
+                            valueColor: const AlwaysStoppedAnimation<Color>(_lime),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
               const SizedBox(height: 14),
-              if (!_showExercises)
-                Row(
+
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF18231A),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF304332)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _WorkoutStat(
-                        icon: Icons.fitness_center_rounded,
-                        label: 'Workouts',
-                        value: all.length.toString(),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _WorkoutStat(
-                        icon: Icons.schedule_rounded,
-                        label: 'Active minutes',
-                        value: minutes.toString(),
+                    const Text('Ready to train?', style: TextStyle(
+                      color: _ink, fontSize: 19, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    const Text('Choose an exercise and record your training session.',
+                        style: TextStyle(color: _muted, fontSize: 12)),
+                    const SizedBox(height: 13),
+                    SizedBox(
+                      width: double.infinity, height: 46,
+                      child: FilledButton.icon(
+                        onPressed: _add,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _lime, foregroundColor: _bg,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13))),
+                        icon: const Icon(Icons.play_arrow_rounded),
+                        label: const Text('Start Workout',
+                            style: TextStyle(fontWeight: FontWeight.w800)),
                       ),
                     ),
                   ],
-                ),
-              const SizedBox(height: 18),
-              if (!_showExercises)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Your activity',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                        color: _ink,
-                      ),
-                    ),
-                    Text(
-                      filtered.length.toString() + ' workouts',
-                      style: const TextStyle(fontSize: 12, color: _muted),
-                    ),
-                  ],
-                ),
-              const SizedBox(height: 10),
-              if (_showExercises)
-                ...workoutExercisePresets.map(
-                  (item) => _ExerciseCard(
-                    item: item,
-                    onAdd: () => _add(preset: item),
-                  ),
-                )
-              else if (filtered.isEmpty)
-                const AppEmptyState(
-                  icon: Icons.fitness_center_outlined,
-                  title: 'Ready to get moving?',
-                  message:
-                      'Add your first workout to start building your fitness history.',
-                )
-              else
-                ...filtered.map((w) => _WorkoutCard(workout: w)),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 50,
-                child: FilledButton.icon(
-                  onPressed: _add,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _lime,
-                    foregroundColor: const Color(0xFF080D0B),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  icon: const Icon(Icons.add_circle_outline_rounded),
-                  label: const Text(
-                    'Add Workout',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
                 ),
               ),
+              const SizedBox(height: 14),
+
+              Row(children: [
+                Expanded(child: _QuickAction(
+                  icon: Icons.bar_chart_rounded, label: 'Progress',
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => WorkoutProgressScreen(workouts: all))))),
+                const SizedBox(width: 9),
+                Expanded(child: _QuickAction(
+                  icon: Icons.auto_awesome_rounded, label: 'Recommendations',
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => WorkoutRecommendationsScreen(workouts: all))))),
+              ]),
+              const SizedBox(height: 8),
+              Row(children: [
+                Expanded(child: _QuickAction(
+                  icon: Icons.forum_rounded, label: 'FitTrack AI',
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const AiAssistantScreen())))),
+                const SizedBox(width: 9),
+                Expanded(child: _QuickAction(
+                  icon: Icons.flag_rounded, label: 'Goals',
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const WorkoutGoalsScreen())))),
+              ]),
+              const SizedBox(height: 8),
+              _QuickAction(
+                icon: Icons.calendar_month_rounded, label: 'Calendar',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => WorkoutCalendarScreen(workouts: all)))),
+              const SizedBox(height: 14),
+
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF141B17),
+                  borderRadius: BorderRadius.circular(19),
+                  border: Border.all(color: const Color(0xFF304332)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      const Icon(Icons.center_focus_strong_rounded, color: _lime, size: 25),
+                      const SizedBox(width: 10),
+                      const Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('AI Workout Analysis', style: TextStyle(
+                            color: _ink, fontSize: 15, fontWeight: FontWeight.w800)),
+                          SizedBox(height: 3),
+                          Text('Analyze your push-ups using a video or camera.',
+                              style: TextStyle(color: _muted, fontSize: 11)),
+                        ],
+                      )),
+                    ]),
+                    const SizedBox(height: 13),
+                    Row(children: [
+                      Expanded(child: OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => const PushUpVideoAnalysisScreen())),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _lime, side: const BorderSide(color: _lime),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 11)),
+                        icon: const Icon(Icons.video_library_rounded, size: 17),
+                        label: const Text('Upload Video', style: TextStyle(fontSize: 11)),
+                      )),
+                      const SizedBox(width: 8),
+                      Expanded(child: OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => const PushUpRecordingScreen())),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _lime, side: const BorderSide(color: _lime),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 11)),
+                        icon: const Icon(Icons.videocam_rounded, size: 17),
+                        label: const Text('Record Video', style: TextStyle(fontSize: 11)),
+                      )),
+                    ]),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(14)),
+                child: Row(children: [
+                  Expanded(child: _topTab('My Workouts', !_showExercises,
+                      () => setState(() => _showExercises = false))),
+                  Expanded(child: _topTab('Exercises', _showExercises,
+                      () => setState(() => _showExercises = true))),
+                ]),
+              ),
+              const SizedBox(height: 14),
+
+              if (_showExercises) ...[
+                ...workoutExercisePresets.map((item) => _ExerciseCard(
+                  item: item, onAdd: () => _add(preset: item))),
+              ] else ...[
+                Row(children: [
+                  const Expanded(child: Text('Recent Workouts', style: TextStyle(
+                    color: _ink, fontSize: 18, fontWeight: FontWeight.w800))),
+                  Text('${filtered.length} workouts',
+                      style: const TextStyle(color: _lime, fontSize: 11)),
+                ]),
+                const SizedBox(height: 9),
+                TextField(
+                  controller: _searchController, focusNode: _searchFocusNode,
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                  style: const TextStyle(color: _ink, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search workouts...', prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _searchQuery.isEmpty ? null : IconButton(
+                      tooltip: 'Clear search',
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                        _searchFocusNode.requestFocus();
+                      },
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                    filled: true, fillColor: const Color(0xFF141B17),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF27332B))),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF27332B))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: _lime)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                StreamBuilder<WorkoutCategorySettings>(
+                  stream: _categorySettingsStream,
+                  builder: (context, categoriesSnapshot) {
+                    final settings = categoriesSnapshot.data ?? const WorkoutCategorySettings();
+                    final available = <String>{
+                      ...WorkoutCategoryService.systemCategories,
+                      ...settings.custom,
+                      ...all.map((w) => w.category),
+                    };
+                    final filters = ['All', ...available.where(
+                      (category) => !settings.hidden.contains(category))];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          const Expanded(child: Text('Categories', style: TextStyle(
+                            color: _muted, fontSize: 12, fontWeight: FontWeight.w600))),
+                          TextButton.icon(
+                            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => WorkoutCategoriesScreen(
+                                legacyCategories: all.map((w) => w.category).toSet().toList()))),
+                            icon: const Icon(Icons.tune_rounded, size: 16),
+                            label: const Text('Edit Categories'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: _lime, visualDensity: VisualDensity.compact),
+                          ),
+                        ]),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(children: filters.map((filter) {
+                            final selected = _filter == filter;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(filter), selected: selected,
+                                onSelected: (_) => setState(() => _filter = filter),
+                                backgroundColor: const Color(0xFF27332B),
+                                selectedColor: _lime, side: BorderSide.none,
+                                showCheckmark: false, shape: const StadiumBorder(),
+                                labelStyle: TextStyle(
+                                  fontSize: 11, color: selected ? _bg : _ink,
+                                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
+                              ),
+                            );
+                          }).toList()),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 10),
+                if (filtered.isEmpty)
+                  const AppEmptyState(
+                    icon: Icons.fitness_center_outlined,
+                    title: 'Ready to get moving?',
+                    message: 'Add your first workout to start building your fitness history.',
+                  )
+                else
+                  ...filtered.take(3).map((w) => _WorkoutCard(workout: w)),
+                if (filtered.length > 3)
+                  Align(
+                    alignment: Alignment.center,
+                    child: TextButton(
+                      onPressed: () => setState(() {
+                        _searchQuery = '';
+                        _searchController.clear();
+                        _filter = 'All';
+                      }),
+                      child: const Text('View All Workouts',
+                          style: TextStyle(color: _lime)),
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 46,
+                  child: OutlinedButton.icon(
+                    onPressed: _add,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _lime, side: const BorderSide(color: _lime),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('Add Workout'),
+                  ),
+                ),
+              ],
             ],
+          );
+        },
+      ),
+    ),
+  );
+
+  static String _monthShort(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
+  }
+}
+
+class _WeeklyMetric extends StatelessWidget {
+  const _WeeklyMetric({required this.icon, required this.value, required this.label});
+  final IconData icon;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Icon(icon, color: _lime, size: 21),
+      const SizedBox(height: 5),
+      Text(value, style: const TextStyle(
+        color: _ink, fontSize: 21, fontWeight: FontWeight.w800)),
+      Text(label, style: const TextStyle(color: _muted, fontSize: 10)),
+    ],
+  );
+}
+
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: const Color(0xFF141B17),
+    borderRadius: BorderRadius.circular(15),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 52),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFF27332B)),
+        ),
+        child: Row(children: [
+          Icon(icon, color: _lime, size: 21),
+          const SizedBox(width: 9),
+          Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: _ink, fontSize: 11, fontWeight: FontWeight.w700))),
+          const Icon(Icons.chevron_right_rounded, color: _lime, size: 17),
+        ]),
+      ),
+    ),
+  );
+}
+     ],
           );
         },
       ),
