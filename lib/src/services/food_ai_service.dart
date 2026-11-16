@@ -66,7 +66,8 @@ class DailyNutritionInsight {
   }
 }
 
-class FoodAiService {  FoodAiService._();
+class FoodAiService {
+  FoodAiService._();
   static final FoodAiService instance = FoodAiService._();
 
   final GenerativeModel _model = FirebaseAI.googleAI().generativeModel(
