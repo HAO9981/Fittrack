@@ -11,7 +11,6 @@ const _navLime = Color(0xFF9BFF3D);
 const _navInk = Color(0xFFF4F7F1);
 const _navMuted = Color(0xFF9AA69C);
 const _navBg = Color(0xFF080D0B);
-const _navSurface = Color(0xFF141B17);
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -161,7 +160,6 @@ class _FitTrackDrawer extends StatelessWidget {
                     title: 'Workout',
                     selected: selectedIndex == 1,
                     initiallyExpanded: selectedIndex == 1,
-                    onTap: () => onSelectPage(1),
                     children: [
                       'My Workouts',
                       'Exercises',
@@ -179,7 +177,6 @@ class _FitTrackDrawer extends StatelessWidget {
                     title: 'Nutrition',
                     selected: selectedIndex == 2,
                     initiallyExpanded: selectedIndex == 2,
-                    onTap: () => onSelectPage(2),
                     children: const ['Today\'s Meals', 'Meal History', 'Daily Intake'],
                     onChildTap: () => onSelectPage(2),
                   ),
@@ -189,7 +186,6 @@ class _FitTrackDrawer extends StatelessWidget {
                     title: 'Explore',
                     selected: selectedIndex == 3,
                     initiallyExpanded: selectedIndex == 3,
-                    onTap: () => onSelectPage(3),
                     children: const ['Gym Finder', 'Saved Gyms'],
                     onChildTap: () => onSelectPage(3),
                   ),
@@ -205,7 +201,6 @@ class _FitTrackDrawer extends StatelessWidget {
                     title: 'Profile',
                     selected: selectedIndex == 4,
                     initiallyExpanded: selectedIndex == 4,
-                    onTap: () => onSelectPage(4),
                     children: const [
                       'Personal Information',
                       'Weight Tracking',
@@ -302,7 +297,6 @@ class _DrawerGroup extends StatelessWidget {
     required this.title,
     required this.selected,
     required this.initiallyExpanded,
-    required this.onTap,
     required this.children,
     required this.onChildTap,
   });
@@ -311,7 +305,6 @@ class _DrawerGroup extends StatelessWidget {
   final String title;
   final bool selected;
   final bool initiallyExpanded;
-  final VoidCallback onTap;
   final List<String> children;
   final VoidCallback onChildTap;
 
