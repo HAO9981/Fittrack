@@ -3,6 +3,7 @@ import '../../models/meal.dart';
 import '../../services/auth_service.dart';
 import '../../services/nutrition_service.dart';
 import '../../services/food_ai_service.dart';
+import '../../services/nutrition_goal_service.dart';
 import '../../widgets/app_empty_state.dart';
 import 'add_meal_screen.dart';
 import 'edit_meal_screen.dart';
@@ -85,6 +86,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
             fat: meals.fold<double>(0, (sum, meal) => sum + meal.fatGrams),
           ),
           const SizedBox(height: 12),
+          _NutritionGoalsCard(
+            calories: total,
+            protein: meals.fold<double>(0, (sum, meal) => sum + meal.proteinGrams),
+            carbs: meals.fold<double>(0, (sum, meal) => sum + meal.carbsGrams),
+            fat: meals.fold<double>(0, (sum, meal) => sum + meal.fatGrams),
+          ),
+          const SizedBox(height: 12),
           _DailyAiNutritionCard(meals: meals, date: _date),
           const SizedBox(height: 22),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(today ? "Today's Meals" : 'Meals', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: _ink)), Text(meals.length.toString() + ' items', style: const TextStyle(fontSize: 12, color: _muted))]),
@@ -99,6 +107,146 @@ class _NutritionScreenState extends State<NutritionScreen> {
 }
 
 int _categoryTotal(List<Meal> meals, String category) => meals.where((m) => m.category == category).fold<int>(0, (sum, m) => sum + m.calories);
+
+class _NutritionGoalsCard extends StatelessWidget {
+  const _NutritionGoalsCard({
+    required this.calories,
+    required this.protein,
+    required this.carbs,
+    required this.fat,
+  });
+
+  final int calories;
+  final double protein;
+  final double carbs;
+  final double fat;
+
+  Future<void> _editGoals(BuildContext context, NutritionGoals goals) async {
+    final caloriesController = TextEditingController(text: goals.calories.toString());
+    final proteinController = TextEditingController(text: goals.proteinGrams.toStringAsFixed(0));
+    final carbsController = TextEditingController(text: goals.carbsGrams.toStringAsFixed(0));
+    final fatController = TextEditingController(text: goals.fatGrams.toStringAsFixed(0));
+    final formKey = GlobalKey<FormState>();
+
+    final updated = await showDialog<NutritionGoals>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Daily nutrition goals'),
+        content: Form(
+          key: formKey,
+          child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+            _goalInput(caloriesController, 'Calories (kcal)', 500, 10000, true),
+            _goalInput(proteinController, 'Protein (g)', 0, 500, false),
+            _goalInput(carbsController, 'Carbs (g)', 0, 1000, false),
+            _goalInput(fatController, 'Fat (g)', 0, 500, false),
+          ])),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(dialogContext, NutritionGoals(
+                calories: int.parse(caloriesController.text),
+                proteinGrams: double.parse(proteinController.text),
+                carbsGrams: double.parse(carbsController.text),
+                fatGrams: double.parse(fatController.text),
+              ));
+            },
+            child: const Text('Save goals'),
+          ),
+        ],
+      ),
+    );
+
+    caloriesController.dispose();
+    proteinController.dispose();
+    carbsController.dispose();
+    fatController.dispose();
+    if (updated == null) return;
+    try {
+      await NutritionGoalService.instance.saveGoals(updated);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to save nutrition goals. Please try again.')),
+        );
+      }
+    }
+  }
+
+  static Widget _goalInput(
+    TextEditingController controller,
+    String label,
+    double min,
+    double max,
+    bool integer,
+  ) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(labelText: label),
+      validator: (value) {
+        final number = double.tryParse(value ?? '');
+        if (number == null || number < min || number > max ||
+            (integer && number != number.roundToDouble())) {
+          return 'Enter a value from $min to $max.';
+        }
+        return null;
+      },
+    ),
+  );
+
+  Widget _progress(String label, double current, double target, String unit, Color color) {
+    final ratio = target <= 0 ? 0.0 : (current / target).clamp(0.0, 1.0).toDouble();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 11, color: _ink, fontWeight: FontWeight.w600))),
+          Text('${current.toStringAsFixed(0)} / ${target.toStringAsFixed(0)} $unit', style: const TextStyle(fontSize: 10, color: _muted)),
+        ]),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: LinearProgressIndicator(value: ratio, minHeight: 7, backgroundColor: const Color(0xFF29332D), valueColor: AlwaysStoppedAnimation<Color>(color)),
+        ),
+      ]),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => StreamBuilder<NutritionGoals>(
+    stream: NutritionGoalService.instance.watchGoals(),
+    builder: (context, snapshot) {
+      final goals = snapshot.data ?? const NutritionGoals();
+      return Container(
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(19)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Daily Goals', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _ink)),
+              Text('Track your intake against your targets', style: TextStyle(fontSize: 10, color: _muted)),
+            ])),
+            IconButton(
+              tooltip: 'Edit nutrition goals',
+              onPressed: () => _editGoals(context, goals),
+              icon: const Icon(Icons.tune_rounded, color: _lime, size: 20),
+            ),
+          ]),
+          _progress('Calories', calories.toDouble(), goals.calories.toDouble(), 'kcal', _lime),
+          _progress('Protein', protein, goals.proteinGrams, 'g', const Color(0xFF9BFF3D)),
+          _progress('Carbs', carbs, goals.carbsGrams, 'g', const Color(0xFFFFC66D)),
+          _progress('Fat', fat, goals.fatGrams, 'g', const Color(0xFF7BC8FF)),
+          const SizedBox(height: 8),
+          const Text('Default targets are general starting points. Adjust them to your needs.', style: TextStyle(fontSize: 9, color: _muted)),
+        ]),
+      );
+    },
+  );
+}
 
 class _DailyAiNutritionCard extends StatefulWidget {
   const _DailyAiNutritionCard({required this.meals, required this.date});
