@@ -74,6 +74,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
             .getRecentWorkouts(lookback: const Duration(days: 30), limit: 10)
             .first,
         NutritionService.instance.getMeals().first,
+        FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
       ]).timeout(const Duration(seconds: 12));
 
       final profile = results[0] as UserProfile?;
@@ -83,6 +84,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           .where((meal) => meal.date.isAfter(cutoff))
           .take(10)
           .toList();
+      final userData = (results[3] as DocumentSnapshot<Map<String, dynamic>>).data() ?? {};
+      final weeklySessionGoal = userData['workoutGoalSessionsPerWeek'] ?? 'Not set';
+      final weeklyMinuteGoal = userData['workoutGoalMinutesPerWeek'] ?? 'Not set';
 
       final buffer = StringBuffer()
         ..writeln('Name: ${profile?.displayName ?? user.displayName ?? 'User'}')
