@@ -41,6 +41,34 @@ class FoodAnalysis {
 }
 
 class FoodAiService {
+
+class DailyNutritionInsight {
+  const DailyNutritionInsight({
+    required this.summary,
+    required this.strengths,
+    required this.suggestions,
+    required this.disclaimer,
+  });
+
+  final String summary;
+  final List<String> strengths;
+  final List<String> suggestions;
+  final String disclaimer;
+
+  factory DailyNutritionInsight.fromJson(Map<String, dynamic> json) {
+    List<String> readList(dynamic value) => value is List
+        ? value.whereType<String>().map((item) => item.trim()).where((item) => item.isNotEmpty).toList()
+        : <String>[];
+    return DailyNutritionInsight(
+      summary: (json['summary'] as String? ?? '').trim(),
+      strengths: readList(json['strengths']),
+      suggestions: readList(json['suggestions']),
+      disclaimer: (json['disclaimer'] as String? ?? 'Nutrition guidance is general and approximate.').trim(),
+    );
+  }
+}
+
+
   FoodAiService._();
   static final FoodAiService instance = FoodAiService._();
 
@@ -103,4 +131,58 @@ All nutrition values must be non-negative. Calories must be an integer.
     }
     return result;
   }
+
+  Future<DailyNutritionInsight> analyzeDailyNutrition({
+    required List<Map<String, dynamic>> meals,
+    required int totalCalories,
+    required double proteinGrams,
+    required double carbsGrams,
+    required double fatGrams,
+    required String dateLabel,
+  }) async {
+    if (meals.isEmpty) {
+      throw ArgumentError('Add at least one meal before requesting an analysis.');
+    }
+
+    final prompt = '''
+You are FitTrack AI, a practical nutrition coach. Review this user's logged food for $dateLabel.
+The nutrition values are estimates and may be incomplete. Do not assume unlogged meals were not eaten.
+Do not diagnose diseases or prescribe treatment.
+Daily totals:
+- Calories: $totalCalories kcal
+- Protein: ${proteinGrams.toStringAsFixed(1)} g
+- Carbohydrates: ${carbsGrams.toStringAsFixed(1)} g
+- Fat: ${fatGrams.toStringAsFixed(1)} g
+Logged meals (JSON):
+${jsonEncode(meals)}
+Return ONLY JSON with this schema:
+{
+  "summary": "one concise, balanced overview",
+  "strengths": ["one positive observation"],
+  "suggestions": ["one practical suggestion for the next meal or day"],
+  "disclaimer": "short reminder that estimates are approximate"
+}
+Use only evidence in the supplied records. If macro data is missing, mention that limitation rather than guessing.
+Keep each item short, supportive, and actionable. Return 1-3 strengths and 1-3 suggestions.
+''';
+
+    final response = await _model.generateContent([Content.text(prompt)]).timeout(const Duration(seconds: 45));
+    final responseText = response.text?.trim();
+    if (responseText == null || responseText.isEmpty) {
+      throw StateError('FitTrack AI returned an empty nutrition insight.');
+    }
+    final cleaned = responseText
+        .replaceFirst(RegExp(r'^\s*```(?:json)?\s*'), '')
+        .replaceFirst(RegExp(r'\s*```\s*$'), '');
+    final decoded = jsonDecode(cleaned);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('The AI response was not a JSON object.');
+    }
+    final insight = DailyNutritionInsight.fromJson(decoded);
+    if (insight.summary.isEmpty) {
+      throw const FormatException('The AI returned an incomplete nutrition insight.');
+    }
+    return insight;
+  }
+
 }
