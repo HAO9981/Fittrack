@@ -37,6 +37,9 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
   int _processedFrames = 0;
   int _totalFrames = 0;
   int _durationSeconds = 0;
+  int _downSamples = 0;
+  int _upSamples = 0;
+  bool _hasAnalyzed = false;
   String _stage = 'up';
 
   @override
@@ -71,6 +74,9 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
         _processedFrames = 0;
         _totalFrames = 0;
         _stage = 'up';
+        _downSamples = 0;
+        _upSamples = 0;
+        _hasAnalyzed = false;
       });
       await previous?.dispose();
     } catch (error) {
@@ -133,6 +139,9 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
       _processedFrames = 0;
       _totalFrames = frameTimes.length;
       _stage = 'up';
+      _downSamples = 0;
+      _upSamples = 0;
+      _hasAnalyzed = false;
     });
 
     try {
@@ -151,11 +160,22 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
             if (poses.isNotEmpty) {
               final angle = _calculateAngle(poses.first);
               if (angle != null) {
-                if (angle < 95) {
-                  _stage = 'down';
-                } else if (angle > 155 && _stage == 'down') {
-                  _reps++;
-                  _stage = 'up';
+                // Require two consecutive samples at each end of the movement
+                // to reduce false counts caused by a single noisy pose frame.
+                if (angle < 100) {
+                  _downSamples++;
+                  _upSamples = 0;
+                  if (_downSamples >= 2) _stage = 'down';
+                } else if (angle > 155) {
+                  _upSamples++;
+                  _downSamples = 0;
+                  if (_upSamples >= 2 && _stage == 'down') {
+                    _reps++;
+                    _stage = 'up';
+                  }
+                } else {
+                  _downSamples = 0;
+                  _upSamples = 0;
                 }
               }
             }
@@ -170,19 +190,25 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
     } catch (error) {
       if (mounted) setState(() => _error = 'Analysis failed. Try a shorter, clearer side-view video.\n$error');
     } finally {
-      if (mounted) setState(() => _isAnalyzing = false);
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _hasAnalyzed = _error == null;
+        });
+      }
     }
   }
 
   Future<void> _saveWorkout() async {
-    if (_reps == 0 || _isSaving) return;
+    if (!_hasAnalyzed || _isSaving) return;
     setState(() => _isSaving = true);
     try {
       await WorkoutService.instance.addWorkout(Workout(
         id: '',
         name: 'AI Push-up (Video)',
         category: 'Strength',
-        duration: _durationSeconds < 60 ? 1 : (_durationSeconds / 60).ceil(),
+        duration: _durationSeconds,
+        durationUnit: 'seconds',
         date: DateTime.now(),
         reps: _reps,
       ));
@@ -297,10 +323,10 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
             ),
             const SizedBox(height: 9),
             OutlinedButton.icon(
-              onPressed: _reps == 0 || _isAnalyzing || _isSaving ? null : _saveWorkout,
+              onPressed: !_hasAnalyzed || _isAnalyzing || _isSaving ? null : _saveWorkout,
               style: OutlinedButton.styleFrom(foregroundColor: _lime, side: const BorderSide(color: _border), padding: const EdgeInsets.symmetric(vertical: 15)),
               icon: const Icon(Icons.save_outlined),
-              label: Text(_isSaving ? 'Saving...' : 'Save to Workout History'),
+              label: Text(_isSaving ? 'Saving...' : 'Save Result to Workout History'),
             ),
           ],
         ),
