@@ -20,6 +20,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selected = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _selectPage(int index) {
     setState(() => _selected = index);
@@ -36,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      DashboardScreen(onMenuPressed: () => Scaffold.of(context).openDrawer()),
+      DashboardScreen(onMenuPressed: () => _scaffoldKey.currentState?.openDrawer()),
       const WorkoutScreen(),
       const NutritionScreen(),
       const GymFinderScreen(),
@@ -44,6 +45,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
+      key: _scaffoldKey,
       drawer: _FitTrackDrawer(
         selectedIndex: _selected,
         onSelectPage: _selectPage,
@@ -336,7 +338,6 @@ class _DrawerGroup extends StatelessWidget {
           ),
           trailing: const Icon(Icons.keyboard_arrow_down_rounded,
               color: _navMuted),
-          onExpansionChanged: (_) => onTap(),
           children: children
               .map(
                 (item) => ListTile(
