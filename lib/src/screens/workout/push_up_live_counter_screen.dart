@@ -322,8 +322,13 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
                   const SizedBox(height: 14),
                   Row(children: [
                     Expanded(child: _LiveMetric(label: 'REPS', value: '$_reps', large: true)),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(child: _LiveMetric(label: 'TIME', value: _timeLabel)),
+                    const SizedBox(width: 8),
+                    Expanded(child: _LiveMetric(
+                      label: 'ELBOW',
+                      value: _currentAngle == null ? '--' : '${_currentAngle!.round()}°',
+                    )),
                   ]),
                   const SizedBox(height: 10),
                   Container(
