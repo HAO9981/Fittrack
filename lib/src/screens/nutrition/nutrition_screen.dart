@@ -9,6 +9,7 @@ import 'add_meal_screen.dart';
 import 'edit_meal_screen.dart';
 import 'weekly_nutrition_report_screen.dart';
 import 'food_history_screen.dart';
+import 'nutrition_calendar_screen.dart';
 import '../../navigation/app_navigation.dart';
 
 const _lime = Color(0xFF9BFF3D);
@@ -31,6 +32,15 @@ class _NutritionScreenState extends State<NutritionScreen> {
     final next = _date.add(Duration(days: days));
     if (!next.isAfter(DateUtils.dateOnly(DateTime.now()))) setState(() => _date = next);
   }
+  Future<void> _openCalendar() async {
+    final selected = await Navigator.of(context).push<DateTime>(
+      MaterialPageRoute(builder: (_) => NutritionCalendarScreen(initialDate: _date)),
+    );
+    if (selected != null && mounted) {
+      setState(() => _date = DateUtils.dateOnly(selected));
+    }
+  }
+
   void _addMeal() {
     if (FirebaseAuthService.instance.currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to add a meal.')));
@@ -63,7 +73,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WeeklyNutritionReportScreen())),
               icon: const Icon(Icons.bar_chart_rounded, color: _lime),
             ),
-            IconButton(onPressed: _chooseDate, tooltip: 'Choose date', icon: const Icon(Icons.calendar_month_rounded, color: _ink)),
+            IconButton(onPressed: _openCalendar, tooltip: 'Nutrition calendar', icon: const Icon(Icons.calendar_month_rounded, color: _ink)),
           ]),
           const SizedBox(height: 8),
           Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(18)), child: Row(children: [
