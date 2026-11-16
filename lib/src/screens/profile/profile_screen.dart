@@ -6,6 +6,7 @@ import '../../models/user_profile.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/app_loading.dart';
+import '../../navigation/app_navigation.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -132,6 +133,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                 children: [
                   Row(
                     children: [
+                      IconButton(tooltip: 'Open navigation menu', onPressed: AppNavigation.openDrawer, icon: const Icon(Icons.menu_rounded, color: Color(0xFFF4F7F1), size: 25)),
                       const Expanded(child: Text('Profile', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFFF4F7F1)))),
                       IconButton(
                         tooltip: 'Account settings',
