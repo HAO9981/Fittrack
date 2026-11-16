@@ -8,6 +8,7 @@ import 'add_workout_screen.dart';
 import 'edit_workout_screen.dart';
 import 'workout_categories_screen.dart';
 import 'push_up_video_analysis_screen.dart';
+import 'push_up_recording_screen.dart';
 
 const _lime = Color(0xFF9BFF3D);
 const _ink = Color(0xFFF4F7F1);
@@ -199,6 +200,43 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                               Text('AI Push-up Analysis', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
                               SizedBox(height: 3),
                               Text('Upload a video to count your reps', style: TextStyle(color: _muted, fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 9),
+              Material(
+                color: const Color(0xFF141B17),
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PushUpRecordingScreen(),
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF27332B)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.videocam_rounded, color: _lime, size: 25),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('AI Camera Recording', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
+                              SizedBox(height: 3),
+                              Text('Record a set, then analyze your reps', style: TextStyle(color: _muted, fontSize: 11)),
                             ],
                           ),
                         ),
