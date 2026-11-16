@@ -31,6 +31,7 @@ class WorkoutScreen extends StatefulWidget {
 class _WorkoutScreenState extends State<WorkoutScreen> {
   String _filter = 'All';
   bool _showExercises = false;
+  bool _showAllWorkouts = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -428,18 +429,19 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     message: 'Add your first workout to start building your fitness history.',
                   )
                 else
-                  ...filtered.take(3).map((w) => _WorkoutCard(workout: w)),
+                  ...( _showAllWorkouts ? filtered : filtered.take(3))
+                      .map((w) => _WorkoutCard(workout: w)),
                 if (filtered.length > 3)
                   Align(
                     alignment: Alignment.center,
                     child: TextButton(
-                      onPressed: () => setState(() {
-                        _searchQuery = '';
-                        _searchController.clear();
-                        _filter = 'All';
-                      }),
-                      child: const Text('View All Workouts',
-                          style: TextStyle(color: _lime)),
+                      onPressed: () => setState(
+                        () => _showAllWorkouts = !_showAllWorkouts,
+                      ),
+                      child: Text(
+                        _showAllWorkouts ? 'Show Less' : 'View All Workouts',
+                        style: const TextStyle(color: _lime),
+                      ),
                     ),
                   ),
                 const SizedBox(height: 8),
