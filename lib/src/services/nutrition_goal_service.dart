@@ -43,14 +43,17 @@ class NutritionGoalService {
   DocumentReference<Map<String, dynamic>> get _document {
     final user = FirebaseAuthService.instance.currentUser;
     if (user == null) throw StateError('Please sign in to manage nutrition goals.');
-    return _firestore.collection('users').doc(user.uid)
-        .collection('settings').doc('nutritionGoals');
+    return _firestore.collection('users').doc(user.uid);
   }
 
   Stream<NutritionGoals> watchGoals() {
     try {
-      return _document.snapshots().map((snapshot) =>
-          NutritionGoals.fromMap(snapshot.data()));
+      return _document.snapshots().map((snapshot) {
+        final data = snapshot.data()?['nutritionGoals'];
+        return NutritionGoals.fromMap(
+          data is Map<String, dynamic> ? data : null,
+        );
+      });
     } on StateError catch (error) {
       return Stream<NutritionGoals>.error(error);
     }
@@ -63,6 +66,9 @@ class NutritionGoalService {
         goals.fatGrams < 0 || goals.fatGrams > 500) {
       throw ArgumentError('Please enter nutrition goals within the allowed ranges.');
     }
-    await _document.set(goals.toMap(), SetOptions(merge: true));
+    await _document.set(
+      {'nutritionGoals': goals.toMap()},
+      SetOptions(merge: true),
+    );
   }
 }
