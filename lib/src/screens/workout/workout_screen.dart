@@ -529,55 +529,6 @@ class _QuickAction extends StatelessWidget {
   );
 }
 
-class _WorkoutStat extends StatelessWidget {
-  const _WorkoutStat({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-  final IconData icon;
-  final String label, value;
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: const Color(0xFF141B17),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFF27332B)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: const Color(0xFF25351D),
-            borderRadius: BorderRadius.circular(13),
-          ),
-          child: Icon(icon, color: _lime, size: 20),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  color: _ink,
-                ),
-              ),
-              Text(label, style: const TextStyle(fontSize: 11, color: _muted)),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 class _WorkoutCard extends StatelessWidget {
   const _WorkoutCard({required this.workout});
   final Workout workout;
