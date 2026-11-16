@@ -619,6 +619,13 @@ class _WorkoutCard extends StatelessWidget {
                         style: const TextStyle(fontSize: 11, color: _muted),
                       ),
                     ],
+                    if (workout.repsPerMinute != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        '${workout.repsPerMinute!.toStringAsFixed(1)} reps/min',
+                        style: const TextStyle(fontSize: 11, color: _muted),
+                      ),
+                    ],
                     const SizedBox(width: 10),
                     Flexible(
                       child: Text(
