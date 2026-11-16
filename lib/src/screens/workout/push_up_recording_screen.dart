@@ -179,7 +179,7 @@ class _PushUpRecordingScreenState extends State<PushUpRecordingScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: _border)),
                         child: Column(children: [
-                          Text(_timeLabel, style: const TextStyle(color: _lime, fontSize: 32, fontWeight: FontWeight.w800, fontFeatures: [])),
+                          Text(_timeLabel, style: const TextStyle(color: _lime, fontSize: 32, fontWeight: FontWeight.w800)),
                           const SizedBox(height: 4),
                           Text(_recording ? 'RECORDING' : 'READY', style: const TextStyle(color: _muted, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
                         ]),
