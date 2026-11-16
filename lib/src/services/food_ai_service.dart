@@ -40,8 +40,6 @@ class FoodAnalysis {
   }
 }
 
-class FoodAiService {
-
 class DailyNutritionInsight {
   const DailyNutritionInsight({
     required this.summary,
@@ -68,8 +66,7 @@ class DailyNutritionInsight {
   }
 }
 
-
-  FoodAiService._();
+class FoodAiService {  FoodAiService._();
   static final FoodAiService instance = FoodAiService._();
 
   final GenerativeModel _model = FirebaseAI.googleAI().generativeModel(
