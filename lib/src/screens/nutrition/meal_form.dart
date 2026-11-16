@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../models/meal.dart';
 import '../../services/food_ai_service.dart';
+import '../../services/food_favorite_service.dart';
 
 class MealForm extends StatefulWidget {
   const MealForm({
@@ -133,6 +134,54 @@ class _MealFormState extends State<MealForm> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _isAnalyzing = false);
+    }
+  }
+
+  void _applyFavorite(FoodFavorite favorite) {
+    setState(() {
+      _foodNameController.text = favorite.name;
+      _category = favorite.category;
+      _caloriesController.text = favorite.calories.toString();
+      _proteinController.text = favorite.proteinGrams.toStringAsFixed(1);
+      _carbsController.text = favorite.carbsGrams.toStringAsFixed(1);
+      _fatController.text = favorite.fatGrams.toStringAsFixed(1);
+      _portionController.text = favorite.portion;
+      _aiNote = favorite.nutritionNote.isEmpty ? null : favorite.nutritionNote;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${favorite.name} loaded from favorites.')),
+    );
+  }
+
+  Future<void> _saveCurrentAsFavorite() async {
+    final name = _foodNameController.text.trim();
+    final calories = int.tryParse(_caloriesController.text.trim());
+    if (name.isEmpty || _category == null || calories == null || calories <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a food name, meal type and valid calories first.')),
+      );
+      return;
+    }
+    try {
+      await FoodFavoriteService.instance.saveFavorite(FoodFavorite(
+        name: name,
+        category: _category!,
+        calories: calories,
+        proteinGrams: double.tryParse(_proteinController.text) ?? 0,
+        carbsGrams: double.tryParse(_carbsController.text) ?? 0,
+        fatGrams: double.tryParse(_fatController.text) ?? 0,
+        portion: _portionController.text.trim(),
+        nutritionNote: _aiNote ?? '',
+      ));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Food saved to favorites.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to save favorite food. Please try again.')),
+      );
     }
   }
 
@@ -268,6 +317,83 @@ class _MealFormState extends State<MealForm> {
                   ]),
                 ),
                 const SizedBox(height: 20),
+                StreamBuilder<List<FoodFavorite>>(
+                  stream: FoodFavoriteService.instance.watchFavorites(),
+                  builder: (context, snapshot) {
+                    final favorites = snapshot.data ?? <FoodFavorite>[];
+                    return Container(
+                      padding: const EdgeInsets.all(13),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF141B17),
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            const Expanded(
+                              child: Text('Favorite foods', style: TextStyle(
+                                color: Color(0xFFF4F7F1),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              )),
+                            ),
+                            TextButton.icon(
+                              onPressed: _isSaving ? null : _saveCurrentAsFavorite,
+                              icon: const Icon(Icons.bookmark_add_outlined, size: 16),
+                              label: const Text('Save current'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: _lime,
+                                textStyle: const TextStyle(fontSize: 10),
+                              ),
+                            ),
+                          ]),
+                          if (snapshot.hasError)
+                            const Text('Favorites are unavailable right now.', style: TextStyle(color: _muted, fontSize: 10))
+                          else if (favorites.isEmpty)
+                            const Text('Save a meal as a favorite to add it quickly next time.', style: TextStyle(color: _muted, fontSize: 10))
+                          else
+                            SizedBox(
+                              height: 76,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: favorites.length,
+                                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                itemBuilder: (context, index) {
+                                  final favorite = favorites[index];
+                                  return InkWell(
+                                    onTap: _isSaving || _isAnalyzing ? null : () => _applyFavorite(favorite),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      width: 126,
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF202922),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(favorite.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(color: Color(0xFFF4F7F1), fontSize: 11, fontWeight: FontWeight.w700)),
+                                          const SizedBox(height: 5),
+                                          Text('${favorite.calories} kcal · ${favorite.category}',
+                                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(color: _muted, fontSize: 9)),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 18),
                 const Text('Food name', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 7),
                 TextFormField(
