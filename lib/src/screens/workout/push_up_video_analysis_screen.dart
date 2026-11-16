@@ -39,6 +39,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
   int _durationSeconds = 0;
   int _downSamples = 0;
   int _upSamples = 0;
+  final List<int> _repTimesMs = [];
   bool _hasAnalyzed = false;
   String _stage = 'up';
 
@@ -76,6 +77,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
         _stage = 'up';
         _downSamples = 0;
         _upSamples = 0;
+        _repTimesMs.clear();
         _hasAnalyzed = false;
       });
       await previous?.dispose();
@@ -141,6 +143,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
       _stage = 'up';
       _downSamples = 0;
       _upSamples = 0;
+      _repTimesMs.clear();
       _hasAnalyzed = false;
     });
 
@@ -171,6 +174,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
                   _downSamples = 0;
                   if (_upSamples >= 2 && _stage == 'down') {
                     _reps++;
+                    _repTimesMs.add(timeMs);
                     _stage = 'up';
                   }
                 } else {
@@ -197,6 +201,28 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
         });
       }
     }
+  }
+
+  double get _repsPerMinute =>
+      _durationSeconds <= 0 ? 0 : _reps * 60 / _durationSeconds;
+
+  double? get _averageRepIntervalSeconds {
+    if (_repTimesMs.length < 2) return null;
+    var totalInterval = 0;
+    for (var i = 1; i < _repTimesMs.length; i++) {
+      totalInterval += _repTimesMs[i] - _repTimesMs[i - 1];
+    }
+    return totalInterval / (_repTimesMs.length - 1) / 1000;
+  }
+
+  String get _performanceSummary {
+    if (_reps == 0) {
+      return 'No complete repetitions were detected. Try a side-on camera angle and keep your upper body visible throughout the video.';
+    }
+    final rate = _repsPerMinute;
+    if (rate >= 20) return 'Strong pace detected. Keep your movement controlled and maintain a consistent range of motion.';
+    if (rate >= 10) return 'Steady pace detected. Focus on keeping each repetition smooth and consistent.';
+    return 'A measured pace was detected. Take your time and prioritize controlled movement over speed.';
   }
 
   Future<void> _saveWorkout() async {
@@ -315,6 +341,63 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
               Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
             ],
             if (_hasAnalyzed) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: _border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WORKOUT PERFORMANCE',
+                      style: TextStyle(
+                        color: _lime,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricCard(
+                            label: 'REPS / MIN',
+                            value: _repsPerMinute.toStringAsFixed(1),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _MetricCard(
+                            label: 'AVG. REP GAP',
+                            value: _averageRepIntervalSeconds == null
+                                ? '--'
+                                : '${_averageRepIntervalSeconds!.toStringAsFixed(1)}s',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _performanceSummary,
+                      style: const TextStyle(
+                        color: _ink,
+                        fontSize: 12,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    const Text(
+                      'These values are estimates based on detected repetitions and the video duration.',
+                      style: TextStyle(color: _muted, fontSize: 10, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(13),
