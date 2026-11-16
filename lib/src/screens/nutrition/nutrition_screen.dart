@@ -77,6 +77,12 @@ class _NutritionScreenState extends State<NutritionScreen> {
             const SizedBox(width: 8),
             Expanded(child: _MealCategory(icon: Icons.nights_stay_outlined, title: 'Dinner', calories: _categoryTotal(meals, 'Dinner'), color: const Color(0xFFE7F1F0))),
           ]),
+          const SizedBox(height: 14),
+          _MacroSummary(
+            protein: meals.fold<double>(0, (sum, meal) => sum + meal.proteinGrams),
+            carbs: meals.fold<double>(0, (sum, meal) => sum + meal.carbsGrams),
+            fat: meals.fold<double>(0, (sum, meal) => sum + meal.fatGrams),
+          ),
           const SizedBox(height: 22),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(today ? "Today's Meals" : 'Meals', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: _ink)), Text(meals.length.toString() + ' items', style: const TextStyle(fontSize: 12, color: _muted))]),
           const SizedBox(height: 10),
@@ -90,6 +96,41 @@ class _NutritionScreenState extends State<NutritionScreen> {
 }
 
 int _categoryTotal(List<Meal> meals, String category) => meals.where((m) => m.category == category).fold<int>(0, (sum, m) => sum + m.calories);
+
+class _MacroSummary extends StatelessWidget {
+  const _MacroSummary({required this.protein, required this.carbs, required this.fat});
+  final double protein;
+  final double carbs;
+  final double fat;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+    decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(17)),
+    child: Row(children: [
+      const Text('Macros', style: TextStyle(fontSize: 11, color: _muted, fontWeight: FontWeight.w700)),
+      const Spacer(),
+      _MacroValue(label: 'Protein', value: protein, color: const Color(0xFF9BFF3D)),
+      const SizedBox(width: 13),
+      _MacroValue(label: 'Carbs', value: carbs, color: const Color(0xFFFFC66D)),
+      const SizedBox(width: 13),
+      _MacroValue(label: 'Fat', value: fat, color: const Color(0xFF7BC8FF)),
+    ]),
+  );
+}
+
+class _MacroValue extends StatelessWidget {
+  const _MacroValue({required this.label, required this.value, required this.color});
+  final String label;
+  final double value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+    Text('${value.toStringAsFixed(0)}g', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: color)),
+    Text(label, style: const TextStyle(fontSize: 9, color: _muted)),
+  ]);
+}
 
 class _MealCategory extends StatelessWidget {
   const _MealCategory({required this.icon, required this.title, required this.calories, required this.color});
@@ -122,6 +163,10 @@ class _MealCard extends StatelessWidget {
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(meal.foodName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, color: _ink, fontSize: 13)),
       const SizedBox(height: 4), Text(meal.category, style: const TextStyle(fontSize: 11, color: _muted)),
+      if (meal.proteinGrams > 0 || meal.carbsGrams > 0 || meal.fatGrams > 0) ...[
+        const SizedBox(height: 4),
+        Text('P ${meal.proteinGrams.toStringAsFixed(0)}g  C ${meal.carbsGrams.toStringAsFixed(0)}g  F ${meal.fatGrams.toStringAsFixed(0)}g', style: const TextStyle(fontSize: 10, color: _muted)),
+      ],
       const SizedBox(height: 4), Text(MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(meal.date)), style: const TextStyle(fontSize: 10, color: _muted)),
     ])),
     const SizedBox(width: 8),
