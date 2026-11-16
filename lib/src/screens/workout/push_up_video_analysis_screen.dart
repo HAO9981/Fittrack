@@ -237,6 +237,8 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
         durationUnit: 'seconds',
         date: DateTime.now(),
         reps: _reps,
+        repsPerMinute: _repsPerMinute,
+        averageRepIntervalSeconds: _averageRepIntervalSeconds,
       ));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
