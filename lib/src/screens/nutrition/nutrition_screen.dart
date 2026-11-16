@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/meal.dart';
 import '../../services/auth_service.dart';
 import '../../services/nutrition_service.dart';
+import '../../services/food_ai_service.dart';
 import '../../widgets/app_empty_state.dart';
 import 'add_meal_screen.dart';
 import 'edit_meal_screen.dart';
@@ -83,6 +84,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
             carbs: meals.fold<double>(0, (sum, meal) => sum + meal.carbsGrams),
             fat: meals.fold<double>(0, (sum, meal) => sum + meal.fatGrams),
           ),
+          const SizedBox(height: 12),
+          _DailyAiNutritionCard(meals: meals, date: _date),
           const SizedBox(height: 22),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(today ? "Today's Meals" : 'Meals', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: _ink)), Text(meals.length.toString() + ' items', style: const TextStyle(fontSize: 12, color: _muted))]),
           const SizedBox(height: 10),
@@ -96,6 +99,137 @@ class _NutritionScreenState extends State<NutritionScreen> {
 }
 
 int _categoryTotal(List<Meal> meals, String category) => meals.where((m) => m.category == category).fold<int>(0, (sum, m) => sum + m.calories);
+
+class _DailyAiNutritionCard extends StatefulWidget {
+  const _DailyAiNutritionCard({required this.meals, required this.date});
+  final List<Meal> meals;
+  final DateTime date;
+
+  @override
+  State<_DailyAiNutritionCard> createState() => _DailyAiNutritionCardState();
+}
+
+class _DailyAiNutritionCardState extends State<_DailyAiNutritionCard> {
+  DailyNutritionInsight? _insight;
+  bool _loading = false;
+  String? _error;
+
+  Future<void> _analyze() async {
+    if (_loading || widget.meals.isEmpty) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+      _insight = null;
+    });
+    final protein = widget.meals.fold<double>(0, (sum, meal) => sum + meal.proteinGrams);
+    final carbs = widget.meals.fold<double>(0, (sum, meal) => sum + meal.carbsGrams);
+    final fat = widget.meals.fold<double>(0, (sum, meal) => sum + meal.fatGrams);
+    final calories = widget.meals.fold<int>(0, (sum, meal) => sum + meal.calories);
+    try {
+      final result = await FoodAiService.instance.analyzeDailyNutrition(
+        meals: widget.meals.map((meal) => {
+          'foodName': meal.foodName,
+          'category': meal.category,
+          'calories': meal.calories,
+          'proteinGrams': meal.proteinGrams,
+          'carbsGrams': meal.carbsGrams,
+          'fatGrams': meal.fatGrams,
+          'portion': meal.portion ?? 'Not recorded',
+        }).toList(),
+        totalCalories: calories,
+        proteinGrams: protein,
+        carbsGrams: carbs,
+        fatGrams: fat,
+        dateLabel: MaterialLocalizations.of(context).formatMediumDate(widget.date),
+      );
+      if (mounted) setState(() => _insight = result);
+    } catch (_) {
+      if (mounted) setState(() => _error = 'Unable to generate insights. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _DailyAiNutritionCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!DateUtils.isSameDay(oldWidget.date, widget.date) ||
+        oldWidget.meals != widget.meals) {
+      _insight = null;
+      _error = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(
+      color: const Color(0xFF141B17),
+      borderRadius: BorderRadius.circular(19),
+      border: Border.all(color: const Color(0xFF34432F)),
+    ),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Container(width: 34, height: 34, decoration: BoxDecoration(color: const Color(0xFF26351F), borderRadius: BorderRadius.circular(11)), child: const Icon(Icons.auto_awesome_rounded, color: _lime, size: 19)),
+        const SizedBox(width: 10),
+        const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('FitTrack AI Nutrition', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: _ink)),
+          Text('Personalized daily food insights', style: TextStyle(fontSize: 10, color: _muted)),
+        ])),
+        if (_insight != null)
+          IconButton(tooltip: 'Refresh analysis', onPressed: _loading ? null : _analyze, icon: const Icon(Icons.refresh_rounded, color: _muted, size: 19)),
+      ]),
+      const SizedBox(height: 11),
+      if (_insight == null && _error == null)
+        Text(widget.meals.isEmpty ? 'Log a meal to receive nutrition feedback.' : 'Get feedback on your logged meals, calories and macros.', style: const TextStyle(fontSize: 11, color: _muted)),
+      if (_loading) ...[
+        const SizedBox(height: 8),
+        const Row(children: [SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2, color: _lime)), SizedBox(width: 9), Text('Reviewing your daily nutrition...', style: TextStyle(fontSize: 11, color: _muted))]),
+      ],
+      if (_error != null) Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(_error!, style: const TextStyle(fontSize: 11, color: Color(0xFFFF9B8F)))),
+      if (_insight case final insight?) ...[
+        Text(insight.summary, style: const TextStyle(fontSize: 12, height: 1.5, color: _ink)),
+        if (insight.strengths.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          const Text('WHAT YOU DID WELL', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: _lime, letterSpacing: 0.7)),
+          const SizedBox(height: 5),
+          ...insight.strengths.map((item) => _InsightBullet(text: item, color: _lime)),
+        ],
+        if (insight.suggestions.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          const Text('SUGGESTIONS', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFFFFC66D), letterSpacing: 0.7)),
+          const SizedBox(height: 5),
+          ...insight.suggestions.map((item) => _InsightBullet(text: item, color: const Color(0xFFFFC66D))),
+        ],
+        const SizedBox(height: 10),
+        Text(insight.disclaimer, style: const TextStyle(fontSize: 9, color: _muted)),
+      ],
+      const SizedBox(height: 12),
+      SizedBox(width: double.infinity, height: 42, child: OutlinedButton.icon(
+        onPressed: _loading || widget.meals.isEmpty ? null : _analyze,
+        icon: _loading ? const SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.auto_awesome_rounded, size: 16),
+        label: Text(_loading ? 'Analyzing...' : _insight == null ? 'Analyze my nutrition' : 'Analyze again'),
+        style: OutlinedButton.styleFrom(foregroundColor: _lime, side: const BorderSide(color: Color(0xFF526B3B)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13))),
+      )),
+    ]),
+  );
+}
+
+class _InsightBullet extends StatelessWidget {
+  const _InsightBullet({required this.text, required this.color});
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 5),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(padding: const EdgeInsets.only(top: 4), child: Icon(Icons.circle, size: 6, color: color)),
+      const SizedBox(width: 8),
+      Expanded(child: Text(text, style: const TextStyle(fontSize: 11, height: 1.4, color: _ink))),
+    ]),
+  );
+}
 
 class _MacroSummary extends StatelessWidget {
   const _MacroSummary({required this.protein, required this.carbs, required this.fat});
