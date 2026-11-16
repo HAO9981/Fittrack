@@ -217,10 +217,20 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   String _formatWorkouts(List<Workout> workouts) {
     if (workouts.isEmpty) return 'None recorded in the last 30 days.';
     return workouts
-        .map(
-          (workout) =>
-              '${workout.name} (${workout.category}, ${workout.formattedDuration})',
-        )
+        .map((workout) {
+          final details = <String>[
+            workout.category,
+            workout.formattedDuration,
+            if (workout.sets != null) '${workout.sets} sets',
+            if (workout.reps != null) '${workout.reps} reps',
+            if (workout.repsPerMinute != null)
+              '${workout.repsPerMinute!.toStringAsFixed(1)} reps/min',
+            if (workout.averageRepIntervalSeconds != null)
+              'average rep interval ${workout.averageRepIntervalSeconds!.toStringAsFixed(1)} sec',
+            'date ${workout.date.toIso8601String().split('T').first}',
+          ];
+          return '${workout.name} (${details.join(', ')})';
+        })
         .join('; ');
   }
 
