@@ -15,7 +15,8 @@ import '../ai/ai_assistant_screen.dart';
 const lime = Color(0xFF9BFF3D), ink = Color(0xFFF4F7F1), muted = Color(0xFF9AA69C), bg = Color(0xFF080D0B), surface = Color(0xFF141B17), border = Color(0xFF27332B);
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.onMenuPressed});
+  final VoidCallback? onMenuPressed;
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuthService.instance.currentUser;
@@ -59,6 +60,7 @@ class _DashboardContent extends StatelessWidget {
     final greeting = now.hour < 12 ? 'Good morning,' : now.hour < 18 ? 'Good afternoon,' : 'Good evening,';
     return ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 18), children: [
       Row(children: [
+        IconButton(tooltip: 'Open navigation menu', onPressed: onMenuPressed, icon: const Icon(Icons.menu_rounded, color: ink, size: 25)),
         const Expanded(child: Text('FitTrack', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.4))),
         IconButton(
           tooltip: 'Notifications',
