@@ -25,14 +25,15 @@ const _muted = Color(0xFF9AA69C);
 const _bg = Color(0xFF080D0B);
 
 class WorkoutScreen extends StatefulWidget {
-  const WorkoutScreen({super.key});
+  const WorkoutScreen({super.key, this.initialShowExercises = false});
+  final bool initialShowExercises;
   @override
   State<WorkoutScreen> createState() => _WorkoutScreenState();
 }
 
 class _WorkoutScreenState extends State<WorkoutScreen> {
   String _filter = 'All';
-  bool _showExercises = false;
+  late bool _showExercises;
   bool _showAllWorkouts = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -43,6 +44,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   void initState() {
     super.initState();
+    _showExercises = widget.initialShowExercises;
     _workoutsStream = WorkoutService.instance.getWorkouts();
     _categorySettingsStream = WorkoutCategoryService.instance.watch();
   }
