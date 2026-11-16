@@ -80,7 +80,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
       });
       await previous?.dispose();
     } catch (error) {
-      if (mounted) setState(() => _error = 'Unable to open this video. Choose another clip.\\n$error');
+      if (mounted) setState(() => _error = 'Unable to open this video. Choose another clip.\n$error');
     }
   }
 
@@ -313,6 +313,36 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
             if (_error != null) ...[
               const SizedBox(height: 12),
               Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+            ],
+            if (_hasAnalyzed) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _border),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _reps > 0 ? Icons.check_circle_outline : Icons.info_outline,
+                      color: _lime,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Text(
+                        _reps > 0
+                            ? 'Analysis complete. $_reps complete push-ups detected.'
+                            : 'Analysis complete, but no complete push-ups were detected. Try a clear side-view video with your shoulders, elbows and wrists visible.',
+                        style: const TextStyle(color: _ink, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
             const SizedBox(height: 16),
             FilledButton.icon(
