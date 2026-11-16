@@ -11,6 +11,7 @@ import 'push_up_video_analysis_screen.dart';
 import 'push_up_recording_screen.dart';
 import 'workout_detail_screen.dart';
 import 'workout_progress_screen.dart';
+import 'workout_recommendations_screen.dart';
 
 const _lime = Color(0xFF9BFF3D);
 const _ink = Color(0xFFF4F7F1);
@@ -176,6 +177,43 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                               Text('Workout Progress', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
                               SizedBox(height: 3),
                               Text('View weekly activity and training trends', style: TextStyle(color: _muted, fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 9),
+              Material(
+                color: const Color(0xFF141B17),
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WorkoutRecommendationsScreen(workouts: all),
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF27332B)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.auto_awesome_rounded, color: _lime, size: 25),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Workout Recommendations', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
+                              SizedBox(height: 3),
+                              Text('Get training suggestions from your workout history', style: TextStyle(color: _muted, fontSize: 11)),
                             ],
                           ),
                         ),
