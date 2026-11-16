@@ -103,7 +103,9 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
       return;
     }
 
-    const sampleIntervalMs = 300;
+    // A 400 ms interval reduces thumbnail extraction and pose inference work
+    // while retaining enough samples for normal push-up cadence.
+    const sampleIntervalMs = 400;
     final frameTimes = <int>[];
     for (var time = 0; time < durationMs; time += sampleIntervalMs) {
       frameTimes.add(time);
@@ -124,8 +126,8 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
           video: path,
           imageFormat: ImageFormat.JPEG,
           timeMs: timeMs,
-          maxWidth: 480,
-          quality: 65,
+          maxWidth: 360,
+          quality: 50,
         );
         if (framePath != null) {
           try {
