@@ -10,6 +10,8 @@ class Workout {
     this.durationUnit = 'minutes',
     this.sets,
     this.reps,
+    this.repsPerMinute,
+    this.averageRepIntervalSeconds,
     this.createdAt,
   });
 
@@ -21,6 +23,8 @@ class Workout {
   final String durationUnit;
   final int? sets;
   final int? reps;
+  final double? repsPerMinute;
+  final double? averageRepIntervalSeconds;
   final DateTime date;
   final Timestamp? createdAt;
 
@@ -35,6 +39,8 @@ class Workout {
         'durationUnit': durationUnit,
         'sets': sets,
         'reps': reps,
+        'repsPerMinute': repsPerMinute,
+        'averageRepIntervalSeconds': averageRepIntervalSeconds,
         'date': Timestamp.fromDate(date),
         if (createdAt != null) 'createdAt': createdAt,
       };
@@ -49,6 +55,8 @@ class Workout {
       durationUnit: data['durationUnit'] as String? ?? 'minutes',
       sets: (data['sets'] as num?)?.toInt(),
       reps: (data['reps'] as num?)?.toInt(),
+      repsPerMinute: (data['repsPerMinute'] as num?)?.toDouble(),
+      averageRepIntervalSeconds: (data['averageRepIntervalSeconds'] as num?)?.toDouble(),
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdAt: data['createdAt'] as Timestamp?,
     );
