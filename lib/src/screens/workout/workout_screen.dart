@@ -12,6 +12,7 @@ import 'push_up_recording_screen.dart';
 import 'workout_detail_screen.dart';
 import 'workout_progress_screen.dart';
 import 'workout_recommendations_screen.dart';
+import 'workout_goals_screen.dart';
 import '../ai/ai_assistant_screen.dart';
 
 const _lime = Color(0xFF9BFF3D);
@@ -252,6 +253,41 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                               Text('Ask FitTrack AI', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
                               SizedBox(height: 3),
                               Text('Get advice using your profile and recent activity', style: TextStyle(color: _muted, fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 15),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 9),
+              Material(
+                color: const Color(0xFF141B17),
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const WorkoutGoalsScreen()),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF27332B)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.flag_rounded, color: _lime, size: 25),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Workout Goals', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 14)),
+                              SizedBox(height: 3),
+                              Text('Set weekly workout and training-time targets', style: TextStyle(color: _muted, fontSize: 11)),
                             ],
                           ),
                         ),
