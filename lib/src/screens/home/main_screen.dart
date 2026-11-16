@@ -5,6 +5,7 @@ import '../workout/workout_screen.dart';
 import '../gyms/gym_finder_screen.dart';
 import '../ai/ai_assistant_screen.dart';
 import 'dashboard_screen.dart';
+import '../../navigation/app_navigation.dart';
 
 const _navLime = Color(0xFF9BFF3D);
 const _navInk = Color(0xFFF4F7F1);
@@ -20,7 +21,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selected = 0;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _selectPage(int index) {
     setState(() => _selected = index);
@@ -37,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      DashboardScreen(onMenuPressed: () => _scaffoldKey.currentState?.openDrawer()),
+      DashboardScreen(onMenuPressed: AppNavigation.openDrawer),
       const WorkoutScreen(),
       const NutritionScreen(),
       const GymFinderScreen(),
@@ -45,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
-      key: _scaffoldKey,
+      key: AppNavigation.scaffoldKey,
       drawer: _FitTrackDrawer(
         selectedIndex: _selected,
         onSelectPage: _selectPage,
