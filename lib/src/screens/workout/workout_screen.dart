@@ -9,6 +9,7 @@ import 'edit_workout_screen.dart';
 import 'workout_categories_screen.dart';
 import 'push_up_video_analysis_screen.dart';
 import 'push_up_recording_screen.dart';
+import 'workout_detail_screen.dart';
 
 const _lime = Color(0xFF9BFF3D);
 const _ink = Color(0xFFF4F7F1);
@@ -551,7 +552,14 @@ class _WorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final image = _workoutImage(workout.name);
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => WorkoutDetailScreen(workout: workout),
+        ),
+      ),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -659,6 +667,7 @@ class _WorkoutCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
