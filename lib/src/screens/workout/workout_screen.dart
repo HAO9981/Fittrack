@@ -68,7 +68,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           initialSets: preset?.sets,
           initialReps: preset?.reps,
           initialDuration: preset?.duration,
-          initialDurationUnit: preset?.dura
+          initialDurationUnit: preset?.durationUnit ?? 'minutes',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: _bg,
@@ -519,13 +524,6 @@ class _QuickAction extends StatelessWidget {
             style: const TextStyle(color: _ink, fontSize: 11, fontWeight: FontWeight.w700))),
           const Icon(Icons.chevron_right_rounded, color: _lime, size: 17),
         ]),
-      ),
-    ),
-  );
-}
-     ],
-          );
-        },
       ),
     ),
   );

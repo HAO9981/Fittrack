@@ -34,7 +34,13 @@ class DashboardScreen extends StatelessWidget {
         builder: (context, ms) {
           if (ws.connectionState == ConnectionState.waiting || ms.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: lime));
           if (ws.hasError || ms.hasError) return const AppEmptyState(icon: Icons.cloud_off_outlined, title: 'Dashboard unavailable', message: 'Your latest activity could not be loaded.');
-          return _DashboardContent(name: name, profile: profileSnapshot.data, workouts: ws.data ?? const [], meals: ms.data ?? const []);
+          return _DashboardContent(
+            name: name,
+            profile: profileSnapshot.data,
+            workouts: ws.data ?? const [],
+            meals: ms.data ?? const [],
+            onMenuPressed: onMenuPressed,
+          );
         },
       ),
     )));
@@ -44,11 +50,12 @@ class DashboardScreen extends StatelessWidget {
 }
 
 class _DashboardContent extends StatelessWidget {
-  const _DashboardContent({required this.name, required this.profile, required this.workouts, required this.meals});
+  const _DashboardContent({required this.name, required this.profile, required this.workouts, required this.meals, this.onMenuPressed});
   final String name;
   final UserProfile? profile;
   final List<Workout> workouts;
   final List<Meal> meals;
+  final VoidCallback? onMenuPressed;
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now(), today = DateUtils.dateOnly(DateTime.now());
