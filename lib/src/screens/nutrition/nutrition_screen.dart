@@ -5,6 +5,7 @@ import '../../services/nutrition_service.dart';
 import '../../widgets/app_empty_state.dart';
 import 'add_meal_screen.dart';
 import 'edit_meal_screen.dart';
+import '../../navigation/app_navigation.dart';
 
 const _lime = Color(0xFF9BFF3D);
 const _ink = Color(0xFFF4F7F1);
@@ -45,7 +46,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         final total = meals.fold<int>(0, (sum, meal) => sum + meal.calories);
         final today = DateUtils.isSameDay(_date, DateTime.now());
         return ListView(padding: const EdgeInsets.fromLTRB(18, 12, 18, 100), children: [
-          Row(children: [const Expanded(child: Text('Nutrition', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink))), IconButton(onPressed: _chooseDate, tooltip: 'Choose date', icon: const Icon(Icons.calendar_month_rounded, color: _ink))]),
+          Row(children: [IconButton(tooltip: 'Open navigation menu', onPressed: AppNavigation.openDrawer, icon: const Icon(Icons.menu_rounded, color: _ink)), const Expanded(child: Text('Nutrition', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: _ink))), IconButton(onPressed: _chooseDate, tooltip: 'Choose date', icon: const Icon(Icons.calendar_month_rounded, color: _ink))]),
           const SizedBox(height: 8),
           Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(18)), child: Row(children: [
             IconButton(onPressed: () => _moveDate(-1), icon: const Icon(Icons.chevron_left_rounded)),
