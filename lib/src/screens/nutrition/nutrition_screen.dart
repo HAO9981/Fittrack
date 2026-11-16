@@ -56,21 +56,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             IconButton(onPressed: today ? null : () => _moveDate(1), icon: const Icon(Icons.chevron_right_rounded)),
           ])),
           const SizedBox(height: 16),
-          Container(padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(24)), child: Row(children: [
-            SizedBox(width: 124, height: 124, child: Stack(alignment: Alignment.center, children: [
-              SizedBox.expand(child: CircularProgressIndicator(value: (total / 2000).clamp(0.0, 1.0).toDouble(), strokeWidth: 10, backgroundColor: const Color(0xFF27332B), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
-              Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFFA52D), size: 20), const SizedBox(height: 3), Text(total.toString(), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _ink)), const Text('of 2,000 kcal', style: TextStyle(fontSize: 10, color: _muted))]),
-            ])),
-            const SizedBox(width: 17),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Daily intake', style: TextStyle(fontSize: 12, color: _muted)),
-              const SizedBox(height: 5),
-              Text((2000 - total).clamp(0, 2000).toString(), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _ink)),
-              const Text('kcal remaining', style: TextStyle(fontSize: 12, color: _muted)),
-              const SizedBox(height: 9),
-              Text(total >= 2000 ? 'Daily goal reached' : 'Keep logging meals', style: const TextStyle(fontSize: 11, color: _muted)),
-            ])),
-          ])),
+          _DailyCalorieCard(total: total),
           const SizedBox(height: 16),
           Row(children: [
             Expanded(child: _MealCategory(icon: Icons.wb_sunny_outlined, title: 'Breakfast', calories: _categoryTotal(meals, 'Breakfast'), color: const Color(0xFFFFF0D9))),
@@ -107,6 +93,45 @@ class _NutritionScreenState extends State<NutritionScreen> {
 }
 
 int _categoryTotal(List<Meal> meals, String category) => meals.where((m) => m.category == category).fold<int>(0, (sum, m) => sum + m.calories);
+
+class _DailyCalorieCard extends StatelessWidget {
+  const _DailyCalorieCard({required this.total});
+  final int total;
+
+  @override
+  Widget build(BuildContext context) => StreamBuilder<NutritionGoals>(
+    stream: NutritionGoalService.instance.watchGoals(),
+    builder: (context, snapshot) {
+      final goal = snapshot.data?.calories ?? 2000;
+      final remaining = (goal - total).clamp(0, goal);
+      final progress = goal <= 0 ? 0.0 : (total / goal).clamp(0.0, 1.0).toDouble();
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(color: const Color(0xFF141B17), borderRadius: BorderRadius.circular(24)),
+        child: Row(children: [
+          SizedBox(width: 124, height: 124, child: Stack(alignment: Alignment.center, children: [
+            SizedBox.expand(child: CircularProgressIndicator(value: progress, strokeWidth: 10, backgroundColor: const Color(0xFF27332B), valueColor: const AlwaysStoppedAnimation<Color>(_lime))),
+            Column(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFFA52D), size: 20),
+              const SizedBox(height: 3),
+              Text(total.toString(), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _ink)),
+              Text('of $goal kcal', style: const TextStyle(fontSize: 10, color: _muted)),
+            ]),
+          ])),
+          const SizedBox(width: 17),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Daily intake', style: TextStyle(fontSize: 12, color: _muted)),
+            const SizedBox(height: 5),
+            Text(remaining.toString(), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _ink)),
+            const Text('kcal remaining', style: TextStyle(fontSize: 12, color: _muted)),
+            const SizedBox(height: 9),
+            Text(total >= goal ? 'Daily goal reached' : 'Keep logging meals', style: const TextStyle(fontSize: 11, color: _muted)),
+          ])),
+        ]),
+      );
+    },
+  );
+}
 
 class _NutritionGoalsCard extends StatelessWidget {
   const _NutritionGoalsCard({
