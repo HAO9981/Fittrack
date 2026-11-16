@@ -38,14 +38,15 @@ class _GymPlace {
 }
 
 class GymFinderScreen extends StatefulWidget {
-  const GymFinderScreen({super.key});
+  const GymFinderScreen({super.key, this.initialCategory = 'All'});
+  final String initialCategory;
   @override State<GymFinderScreen> createState() => _GymFinderScreenState();
 }
 
 class _GymFinderScreenState extends State<GymFinderScreen> {
   final _searchController = TextEditingController();
   final _mapController = Completer<GoogleMapController>();
-  String _category = 'All';
+  late String _category;
   bool _loading = false;
   String? _error;
   Position? _position;
@@ -66,9 +67,14 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
 
   @override void initState() {
     super.initState();
+    _category = widget.initialCategory;
     _searchController.addListener(_refreshView);
-    _loadSavedPlaces();
-    if (_placesApiKey.isNotEmpty) _loadNearbyPlaces();
+    if (_category == 'Saved') {
+      _loadSavedPlaces();
+    } else {
+      _loadSavedPlaces();
+      if (_placesApiKey.isNotEmpty) _loadNearbyPlaces();
+    }
   }
   @override void dispose() {
     _searchController..removeListener(_refreshView)..dispose();
