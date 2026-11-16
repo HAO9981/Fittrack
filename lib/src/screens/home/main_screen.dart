@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../models/workout.dart';
+import '../../services/workout_service.dart';
+import '../workout/workout_progress_screen.dart';
+import '../workout/workout_goals_screen.dart';
+import '../workout/workout_calendar_screen.dart';
+import '../workout/push_up_video_analysis_screen.dart';
+import '../workout/workout_recommendations_screen.dart';
+import '../nutrition/food_history_screen.dart';
 import '../profile/profile_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../workout/workout_screen.dart';
@@ -26,6 +34,102 @@ class _MainScreenState extends State<MainScreen> {
     Navigator.of(context).maybePop();
   }
 
+  Widget _withWorkouts(Widget Function(List<Workout>) builder) {
+    return StreamBuilder<List<Workout>>(
+      stream: WorkoutService.instance.getWorkouts(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Scaffold(
+            body: Center(child: Text('Unable to load workouts. Please try again.')),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return builder(snapshot.data!);
+      },
+    );
+  }
+
+  void _openDrawerDestination(String destination) {
+    final navigator = Navigator.of(context);
+    navigator.pop();
+    switch (destination) {
+      case 'My Workouts':
+        setState(() => _selected = 1);
+        break;
+      case 'Exercises':
+        setState(() => _selected = 1);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => const WorkoutScreen(initialShowExercises: true),
+        ));
+        break;
+      case 'Workout Progress':
+        setState(() => _selected = 1);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => _withWorkouts(
+            (workouts) => WorkoutProgressScreen(workouts: workouts),
+          ),
+        ));
+        break;
+      case 'Workout Goals':
+        setState(() => _selected = 1);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => const WorkoutGoalsScreen(),
+        ));
+        break;
+      case 'Workout Calendar':
+        setState(() => _selected = 1);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => _withWorkouts(
+            (workouts) => WorkoutCalendarScreen(workouts: workouts),
+          ),
+        ));
+        break;
+      case 'AI Workout Analysis':
+        setState(() => _selected = 1);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => const PushUpVideoAnalysisScreen(),
+        ));
+        break;
+      case 'Recommendations':
+        setState(() => _selected = 1);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => _withWorkouts(
+            (workouts) => WorkoutRecommendationsScreen(workouts: workouts),
+          ),
+        ));
+        break;
+      case 'Today\'s Meals':
+      case 'Daily Intake':
+        setState(() => _selected = 2);
+        break;
+      case 'Meal History':
+        setState(() => _selected = 2);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => const FoodHistoryScreen(),
+        ));
+        break;
+      case 'Gym Finder':
+        setState(() => _selected = 3);
+        break;
+      case 'Saved Gyms':
+        setState(() => _selected = 3);
+        navigator.push(MaterialPageRoute(
+          builder: (_) => const GymFinderScreen(initialCategory: 'Saved'),
+        ));
+        break;
+      case 'Personal Information':
+      case 'Weight Tracking':
+      case 'Fitness Goal':
+      case 'Settings':
+        setState(() => _selected = 4);
+        break;
+    }
+  }
+
   void _openAiAssistant() {
     Navigator.of(context).pop();
     Navigator.of(context).push(
@@ -48,6 +152,7 @@ class _MainScreenState extends State<MainScreen> {
       drawer: _FitTrackDrawer(
         selectedIndex: _selected,
         onSelectPage: _selectPage,
+        onSelectDestination: _openDrawerDestination,
         onOpenAiAssistant: _openAiAssistant,
       ),
       body: IndexedStack(index: _selected, children: pages),
@@ -94,11 +199,13 @@ class _FitTrackDrawer extends StatelessWidget {
   const _FitTrackDrawer({
     required this.selectedIndex,
     required this.onSelectPage,
+    required this.onSelectDestination,
     required this.onOpenAiAssistant,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onSelectPage;
+  final ValueChanged<String> onSelectDestination;
   final VoidCallback onOpenAiAssistant;
 
   @override
@@ -169,7 +276,7 @@ class _FitTrackDrawer extends StatelessWidget {
                       'AI Workout Analysis',
                       'Recommendations',
                     ],
-                    onChildTap: () => onSelectPage(1),
+                    onChildTap: onSelectDestination,
                   ),
                   const _DrawerSectionLabel('NUTRITION'),
                   _DrawerGroup(
@@ -178,7 +285,7 @@ class _FitTrackDrawer extends StatelessWidget {
                     selected: selectedIndex == 2,
                     initiallyExpanded: selectedIndex == 2,
                     children: const ['Today\'s Meals', 'Meal History', 'Daily Intake'],
-                    onChildTap: () => onSelectPage(2),
+                    onChildTap: onSelectDestination,
                   ),
                   const _DrawerSectionLabel('DISCOVER'),
                   _DrawerGroup(
@@ -187,7 +294,7 @@ class _FitTrackDrawer extends StatelessWidget {
                     selected: selectedIndex == 3,
                     initiallyExpanded: selectedIndex == 3,
                     children: const ['Gym Finder', 'Saved Gyms'],
-                    onChildTap: () => onSelectPage(3),
+                    onChildTap: onSelectDestination,
                   ),
                   _DrawerItem(
                     icon: Icons.auto_awesome_rounded,
@@ -207,7 +314,7 @@ class _FitTrackDrawer extends StatelessWidget {
                       'Fitness Goal',
                       'Settings',
                     ],
-                    onChildTap: () => onSelectPage(4),
+                    onChildTap: onSelectDestination,
                   ),
                 ],
               ),
@@ -306,7 +413,7 @@ class _DrawerGroup extends StatelessWidget {
   final bool selected;
   final bool initiallyExpanded;
   final List<String> children;
-  final VoidCallback onChildTap;
+  final ValueChanged<String> onChildTap;
 
   @override
   Widget build(BuildContext context) => Theme(
@@ -340,7 +447,7 @@ class _DrawerGroup extends StatelessWidget {
                   title: Text(item,
                       style:
                           const TextStyle(color: _navMuted, fontSize: 12)),
-                  onTap: onChildTap,
+                  onTap: () => onChildTap(item),
                 ),
               )
               .toList(),
