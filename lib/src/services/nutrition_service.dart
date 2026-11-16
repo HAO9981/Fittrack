@@ -42,6 +42,19 @@ class NutritionService {
     }
   }
 
+  Stream<List<Meal>> getMealsForRange(DateTime start, DateTime endExclusive) {
+    try {
+      return _meals
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+          .where('date', isLessThan: Timestamp.fromDate(endExclusive))
+          .orderBy('date', descending: false)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map(Meal.fromFirestore).toList());
+    } on StateError catch (error) {
+      return Stream<List<Meal>>.error(error);
+    }
+  }
+
   Future<void> addMeal(Meal meal) async {
     final document = _meals.doc();
     await document.set({
