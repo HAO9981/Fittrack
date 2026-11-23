@@ -56,6 +56,94 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     super.dispose();
   }
 
+  Future<void> _openAiTracking() async {
+    final method = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: const Color(0xFF141B17),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF465248),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'AI Push-up Tracking',
+                style: TextStyle(
+                  color: _ink,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Choose how you want to count your push-ups.',
+                style: TextStyle(color: _muted, fontSize: 12),
+              ),
+              const SizedBox(height: 18),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                tileColor: const Color(0xFF26391D),
+                leading: const Icon(Icons.camera_alt_rounded, color: _lime),
+                title: const Text(
+                  'Record with Camera',
+                  style: TextStyle(color: _ink, fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text(
+                  'Count repetitions in real time',
+                  style: TextStyle(color: _muted, fontSize: 11),
+                ),
+                onTap: () => Navigator.pop(sheetContext, 'record'),
+              ),
+              const SizedBox(height: 10),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                tileColor: const Color(0xFF202B24),
+                leading: const Icon(Icons.video_library_rounded, color: _lime),
+                title: const Text(
+                  'Import Video',
+                  style: TextStyle(color: _ink, fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text(
+                  'Analyze an existing workout video',
+                  style: TextStyle(color: _muted, fontSize: 11),
+                ),
+                onTap: () => Navigator.pop(sheetContext, 'video'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || method == null) return;
+    final screen = method == 'record'
+        ? const PushUpLiveCounterScreen()
+        : const PushUpVideoAnalysisScreen();
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => screen),
+    );
+  }
+
   void _add({WorkoutExercisePreset? preset}) {
     if (FirebaseAuthService.instance.currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -361,7 +449,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
               if (_showExercises) ...[
                 ...workoutExercisePresets.map((item) => _ExerciseCard(
-                  item: item, onAdd: () => _add(preset: item))),
+                  item: item,
+                  onAdd: () => _add(preset: item),
+                  onAiTrack: item.name == 'Push Up' ? () => _openAiTracking() : null,
+                )),
               ] else ...[
                 Row(children: [
                   const Expanded(child: Text('Recent Workouts', style: TextStyle(
@@ -826,9 +917,14 @@ Widget _topTab(String label, bool selected, VoidCallback onTap) => Material(
 );
 
 class _ExerciseCard extends StatelessWidget {
-  const _ExerciseCard({required this.item, required this.onAdd});
+  const _ExerciseCard({
+    required this.item,
+    required this.onAdd,
+    this.onAiTrack,
+  });
   final WorkoutExercisePreset item;
   final VoidCallback onAdd;
+  final VoidCallback? onAiTrack;
   @override
   Widget build(BuildContext context) => Material(
     color: Colors.transparent,
@@ -881,6 +977,35 @@ class _ExerciseCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (onAiTrack != null) ...[
+              Material(
+                color: _lime,
+                borderRadius: BorderRadius.circular(30),
+                child: InkWell(
+                  onTap: onAiTrack,
+                  borderRadius: BorderRadius.circular(30),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.auto_awesome_rounded, color: _bg, size: 13),
+                        SizedBox(width: 4),
+                        Text(
+                          'AI',
+                          style: TextStyle(
+                            color: _bg,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 2),
+            ],
             IconButton(
               onPressed: onAdd,
               icon: const Icon(
