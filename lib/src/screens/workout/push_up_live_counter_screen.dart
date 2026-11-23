@@ -273,7 +273,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
       ));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saved $_reps push-ups to Workout History.')),
+        SnackBar(content: Text('Saved $_reps ${widget.exerciseName.toLowerCase()} reps to Workout History.')),
       );
       Navigator.of(context).pop();
     } catch (error) {
