@@ -175,8 +175,8 @@ class _DashboardContent extends StatelessWidget {
       const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), const SizedBox(height: 10),
       Row(children: [
         Expanded(child: _Action(icon: Icons.fitness_center_rounded, label: 'Log Workout', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddWorkoutScreen())))),
-        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Food', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen())))),
-        const SizedBox(width: 9), Expanded(child: _Action(icon: Icons.auto_awesome_rounded, label: 'FitTrack AI', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AiAssistantScreen())))),
+        const SizedBox(width: 10),
+        Expanded(child: _Action(icon: Icons.restaurant_rounded, label: 'Log Food', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen())))),
       ]),
       const SizedBox(height: 22), Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Recent Workouts', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text('${workouts.length} total', style: const TextStyle(fontSize: 11, color: muted))]), const SizedBox(height: 8),
       if (workouts.isEmpty) const _Empty(text: 'Your workouts will appear here.') else ...workouts.take(3).map((w) => _Recent(icon: _workoutIcon(w.category), title: w.name, subtitle: '${w.category}  •  ${w.formattedDuration}', trailing: _formatRecentDate(w.date))),
