@@ -955,18 +955,25 @@ class _ExerciseCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                item.image,
-                width: 58,
-                height: 48,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 58,
-                  height: 48,
-                  color: const Color(0xFF25351D),
-                  child: Icon(item.icon, color: _lime, size: 22),
-                ),
-              ),
+              child: item.image.isEmpty
+                  ? Container(
+                      width: 58,
+                      height: 48,
+                      color: const Color(0xFF25351D),
+                      child: Icon(item.icon, color: _lime, size: 22),
+                    )
+                  : Image.asset(
+                      item.image,
+                      width: 58,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 58,
+                        height: 48,
+                        color: const Color(0xFF25351D),
+                        child: Icon(item.icon, color: _lime, size: 22),
+                      ),
+                    ),
             ),
             const SizedBox(width: 10),
             Expanded(
