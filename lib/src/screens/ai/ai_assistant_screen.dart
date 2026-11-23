@@ -47,15 +47,16 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     try {
       final results = await Future.wait<dynamic>([
         FirestoreService.instance.getUserProfile(user.uid),
-        WorkoutService.instance
-            .getRecentWorkouts(lookback: const Duration(days: 30), limit: 10)
-            .first,
+        WorkoutService.instance.getWorkouts().first,
         NutritionService.instance.getMeals().first,
       ]);
 
       final profile = results[0] as UserProfile?;
-      final workouts = results[1] as List<Workout>;
       final cutoff = DateTime.now().subtract(const Duration(days: 30));
+      final workouts = (results[1] as List<Workout>)
+          .where((workout) => workout.date.isAfter(cutoff))
+          .take(10)
+          .toList();
       final meals = (results[2] as List<Meal>)
           .where((meal) => meal.date.isAfter(cutoff))
           .take(10)
