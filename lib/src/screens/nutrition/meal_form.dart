@@ -11,11 +11,13 @@ class MealForm extends StatefulWidget {
   const MealForm({
     super.key,
     this.meal,
+    this.initialDate,
     required this.submitLabel,
     required this.onSubmit,
   });
 
   final Meal? meal;
+  final DateTime? initialDate;
   final String submitLabel;
   final Future<void> Function(Meal meal) onSubmit;
 
@@ -55,7 +57,7 @@ class _MealFormState extends State<MealForm> {
     _fatController = TextEditingController(text: _formatMacro(meal?.fatGrams));
     _portionController = TextEditingController(text: meal?.portion ?? '');
     _category = meal?.category;
-    _date = DateUtils.dateOnly(meal?.date ?? DateTime.now());
+    _date = DateUtils.dateOnly(widget.initialDate ?? meal?.date ?? DateTime.now());
     _aiNote = meal?.nutritionNote;
   }
 
