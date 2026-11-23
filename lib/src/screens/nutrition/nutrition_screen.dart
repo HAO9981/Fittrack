@@ -46,7 +46,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to add a meal.')));
       return;
     }
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddMealScreen()));
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddMealScreen(initialDate: _date)));
   }
 
   @override Widget build(BuildContext context) => Scaffold(
