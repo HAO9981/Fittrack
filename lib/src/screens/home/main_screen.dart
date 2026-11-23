@@ -271,10 +271,7 @@ class _FitTrackDrawer extends StatelessWidget {
                       'My Workouts',
                       'Exercises',
                       'Workout Progress',
-                      'Workout Goals',
                       'Workout Calendar',
-                      'AI Workout Analysis',
-                      'Recommendations',
                     ],
                     onChildTap: onSelectDestination,
                   ),
@@ -295,12 +292,6 @@ class _FitTrackDrawer extends StatelessWidget {
                     initiallyExpanded: selectedIndex == 3,
                     children: const ['Gym Finder', 'Saved Gyms'],
                     onChildTap: onSelectDestination,
-                  ),
-                  _DrawerItem(
-                    icon: Icons.auto_awesome_rounded,
-                    title: 'FitTrack AI',
-                    selected: false,
-                    onTap: onOpenAiAssistant,
                   ),
                   const _DrawerSectionLabel('PERSONAL'),
                   _DrawerGroup(
