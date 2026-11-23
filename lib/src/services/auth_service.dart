@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/app_user.dart';
 
@@ -7,6 +8,7 @@ abstract class AuthService {
 
   Stream<AppUser?> authStateChanges();
   Future<AppUser> signInWithEmail(String email, String password);
+  Future<AppUser> signInWithGoogle();
   Future<AppUser> signUpWithEmail({
     required String email,
     required String password,
@@ -20,6 +22,7 @@ class FirebaseAuthService implements AuthService {
   static final FirebaseAuthService instance = FirebaseAuthService._();
 
   final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: const ['email']);
 
   AppUser? get currentUser => _user;
 
@@ -42,6 +45,30 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
+  Future<AppUser> signInWithGoogle() async {
+    final account = await _googleSignIn.signIn();
+    if (account == null) {
+      throw firebase_auth.FirebaseAuthException(
+        code: 'google-sign-in-cancelled',
+        message: 'Google sign-in was cancelled.',
+      );
+    }
+    final authentication = await account.authentication;
+    final credential = firebase_auth.GoogleAuthProvider.credential(
+      accessToken: authentication.accessToken,
+      idToken: authentication.idToken,
+    );
+    final result = await _auth.signInWithCredential(credential);
+    if (result.user == null) {
+      throw firebase_auth.FirebaseAuthException(
+        code: 'google-sign-in-failed',
+        message: 'Google sign-in did not return a user.',
+      );
+    }
+    return AppUser.fromFirebaseUser(result.user!);
+  }
+
+  @override
   Future<AppUser> signUpWithEmail({
     required String email,
     required String password,
@@ -58,6 +85,7 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _auth.signOut();
   }
 }
