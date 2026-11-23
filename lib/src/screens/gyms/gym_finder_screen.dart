@@ -94,7 +94,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
   CollectionReference<Map<String, dynamic>>? get _savedCollection {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return null;
-    return FirebaseFirestore.instance.collection('users').doc(user.uid).collection('savedPlaces');
+    return FirebaseFirestore.instance.collection('users').doc(user.uid).collection('savedGyms');
   }
 
   Future<void> _loadSavedPlaces() async {
@@ -156,7 +156,7 @@ class _GymFinderScreenState extends State<GymFinderScreen> {
     } catch (error) {
       if (mounted) {
         final message = error is FirebaseException && error.code == 'permission-denied'
-            ? 'Saving was blocked by Firestore rules. Check access to users/{uid}/savedPlaces.'
+            ? 'Saving was blocked by Firestore rules. Check access to users/{uid}/savedGyms.'
             : 'Unable to save this place (${error is FirebaseException ? error.code : error.runtimeType}).';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
