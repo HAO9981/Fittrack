@@ -8,6 +8,8 @@ import '../../services/nutrition_service.dart';
 import '../../services/workout_service.dart';
 import '../../widgets/app_empty_state.dart';
 import '../workout/add_workout_screen.dart';
+import '../workout/workout_goals_screen.dart';
+import '../workout/workout_recommendations_screen.dart';
 import '../nutrition/add_meal_screen.dart';
 import '../insights/insights_screen.dart';
 import '../ai/ai_assistant_screen.dart';
@@ -113,6 +115,26 @@ class _DashboardContent extends StatelessWidget {
       const SizedBox(height: 18),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Weekly Activity', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)), Text(weekly.fold<int>(0, (s, w) => s + w.durationInMinutes).toString() + ' min', style: const TextStyle(fontWeight: FontWeight.w700))]),
       const SizedBox(height: 10), _Chart(workouts: weekly, today: today),
+      const SizedBox(height: 18),
+      const Text('Fitness Tools', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)),
+      const SizedBox(height: 10),
+      Row(children: [
+        Expanded(child: _Action(
+          icon: Icons.flag_rounded,
+          label: 'Workout Goals',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const WorkoutGoalsScreen()),
+          ),
+        )),
+        const SizedBox(width: 10),
+        Expanded(child: _Action(
+          icon: Icons.lightbulb_outline_rounded,
+          label: 'Recommendations',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => WorkoutRecommendationsScreen(workouts: workouts)),
+          ),
+        )),
+      ]),
       const SizedBox(height: 18),
       InkWell(
         onTap: () => Navigator.of(context).push(
