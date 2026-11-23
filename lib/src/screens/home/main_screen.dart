@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/workout.dart';
 import '../../services/workout_service.dart';
 import '../workout/workout_progress_screen.dart';
-import '../workout/workout_goals_screen.dart';
 import '../workout/workout_calendar_screen.dart';
-import '../workout/push_up_video_analysis_screen.dart';
-import '../workout/workout_recommendations_screen.dart';
 import '../nutrition/food_history_screen.dart';
 import '../profile/profile_screen.dart';
 import '../nutrition/nutrition_screen.dart';
@@ -73,31 +70,11 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ));
         break;
-      case 'Workout Goals':
-        setState(() => _selected = 1);
-        navigator.push(MaterialPageRoute(
-          builder: (_) => const WorkoutGoalsScreen(),
-        ));
-        break;
       case 'Workout Calendar':
         setState(() => _selected = 1);
         navigator.push(MaterialPageRoute(
           builder: (_) => _withWorkouts(
             (workouts) => WorkoutCalendarScreen(workouts: workouts),
-          ),
-        ));
-        break;
-      case 'AI Workout Analysis':
-        setState(() => _selected = 1);
-        navigator.push(MaterialPageRoute(
-          builder: (_) => const PushUpVideoAnalysisScreen(),
-        ));
-        break;
-      case 'Recommendations':
-        setState(() => _selected = 1);
-        navigator.push(MaterialPageRoute(
-          builder: (_) => _withWorkouts(
-            (workouts) => WorkoutRecommendationsScreen(workouts: workouts),
           ),
         ));
         break;
