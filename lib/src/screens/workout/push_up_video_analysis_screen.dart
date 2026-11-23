@@ -160,7 +160,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
       _reps = 0;
       _processedFrames = 0;
       _totalFrames = frameTimes.length;
-      _stage = 'up';
+      _stage = _isSitUp ? 'down' : 'up';
       _downSamples = 0;
       _upSamples = 0;
       _repTimesMs.clear();
@@ -305,7 +305,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: _border)),
-              child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('${widget.exerciseName.toUpperCase()} ANALYSIS', style: TextStyle(color: _lime, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
                 SizedBox(height: 6),
                 Text('Upload a video and let FitTrack count your ${widget.exerciseName.toLowerCase()} reps.', style: TextStyle(color: _ink, fontSize: 15, fontWeight: FontWeight.w600)),
