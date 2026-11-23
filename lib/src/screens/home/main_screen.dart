@@ -11,7 +11,6 @@ import '../profile/profile_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../workout/workout_screen.dart';
 import '../gyms/gym_finder_screen.dart';
-import '../ai/ai_assistant_screen.dart';
 import 'dashboard_screen.dart';
 import '../../navigation/app_navigation.dart';
 
@@ -130,13 +129,6 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  void _openAiAssistant() {
-    Navigator.of(context).pop();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
@@ -153,7 +145,6 @@ class _MainScreenState extends State<MainScreen> {
         selectedIndex: _selected,
         onSelectPage: _selectPage,
         onSelectDestination: _openDrawerDestination,
-        onOpenAiAssistant: _openAiAssistant,
       ),
       body: IndexedStack(index: _selected, children: pages),
       bottomNavigationBar: NavigationBar(
@@ -200,13 +191,11 @@ class _FitTrackDrawer extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelectPage,
     required this.onSelectDestination,
-    required this.onOpenAiAssistant,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onSelectPage;
   final ValueChanged<String> onSelectDestination;
-  final VoidCallback onOpenAiAssistant;
 
   @override
   Widget build(BuildContext context) {
