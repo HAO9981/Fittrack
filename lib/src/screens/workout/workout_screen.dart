@@ -81,7 +81,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'AI $exerciseName Tracking',
                 style: TextStyle(
                   color: _ink,
@@ -90,7 +90,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Choose how you want to count your ${exerciseName.toLowerCase()} reps.',
                 style: TextStyle(color: _muted, fontSize: 12),
               ),
