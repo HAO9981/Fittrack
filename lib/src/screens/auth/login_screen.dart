@@ -194,9 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 14),
                   Center(
                     child: _SocialSignInButton(
-                      icon: Icons.g_mobiledata_rounded,
-                      label: 'Google',
-                      onTap: _isLoading ? () {} : _signInWithGoogle,
+                      onTap: _isLoading ? null : _signInWithGoogle,
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -222,10 +220,8 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 class _SocialSignInButton extends StatelessWidget {
-  const _SocialSignInButton({required this.icon, required this.label, required this.onTap});
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+  const _SocialSignInButton({required this.onTap});
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -234,18 +230,20 @@ class _SocialSignInButton extends StatelessWidget {
     child: Container(
       width: 44,
       height: 44,
-      decoration: BoxDecoration(
-        color: label == 'Facebook' ? const Color(0xFF1877F2) : label == 'Apple' ? const Color(0xFF000000) : const Color(0xFFFFFFFF),
+      decoration: const BoxDecoration(
+        color: Colors.white,
         shape: BoxShape.circle,
-        border: label == 'Apple' ? Border.all(color: const Color(0xFF465047), width: 1) : null,
       ),
-      child: Center(
-        child: label == 'Apple'
-            ? const Icon(Icons.apple, size: 25, color: Colors.white)
-            : label == 'Google'
-                ? const Text('G', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Color(0xFF4285F4)))
-                : const Icon(Icons.facebook_rounded, size: 29, color: Colors.white),
-      )
+      child: const Center(
+        child: Text(
+          'G',
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF4285F4),
+          ),
+        ),
+      ),
     ),
   );
 }
