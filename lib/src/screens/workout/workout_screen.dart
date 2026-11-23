@@ -9,15 +9,7 @@ import 'add_workout_screen.dart';
 import 'edit_workout_screen.dart';
 import 'workout_categories_screen.dart';
 import 'push_up_video_analysis_screen.dart';
-import 'push_up_recording_screen.dart';
 import 'push_up_live_counter_screen.dart';
-import 'workout_detail_screen.dart';
-import 'workout_progress_screen.dart';
-import 'workout_recommendations_screen.dart';
-import 'workout_goals_screen.dart';
-import 'workout_calendar_screen.dart';
-import '../ai/ai_assistant_screen.dart';
-import '../../navigation/app_navigation.dart';
 
 const _lime = Color(0xFF9BFF3D);
 const _ink = Color(0xFFF4F7F1);
