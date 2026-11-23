@@ -42,6 +42,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      await FirebaseAuthService.instance.signInWithGoogle();
+      if (mounted) await Navigator.of(context).maybePop();
+    } on firebase_auth.FirebaseAuthException catch (error) {
+      if (error.code != 'google-sign-in-cancelled') {
+        _showMessage(error.message ?? 'Unable to sign in with Google.');
+      }
+    } catch (_) {
+      _showMessage('Unable to sign in with Google. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _resetPassword() async {
     final email = _emailController.text.trim();
     if (!email.contains('@')) {
@@ -180,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: _SocialSignInButton(
                       icon: Icons.g_mobiledata_rounded,
                       label: 'Google',
-                      onTap: () => _showMessage('Google sign-in is not configured yet.'),
+                      onTap: _isLoading ? () {} : _signInWithGoogle,
                     ),
                   ),
                   const SizedBox(height: 28),
