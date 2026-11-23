@@ -16,7 +16,12 @@ const _surface = Color(0xFF141B17);
 const _border = Color(0xFF27332B);
 
 class PushUpLiveCounterScreen extends StatefulWidget {
-  const PushUpLiveCounterScreen({super.key});
+  const PushUpLiveCounterScreen({
+    super.key,
+    this.exerciseName = 'Push Up',
+  });
+
+  final String exerciseName;
 
   @override
   State<PushUpLiveCounterScreen> createState() => _PushUpLiveCounterScreenState();
@@ -39,6 +44,8 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
   String _stage = 'up';
   double? _currentAngle;
   DateTime? _lastRepAt;
+
+  bool get _isSitUp => widget.exerciseName.toLowerCase() == 'sit-up';
 
   @override
   void initState() {
@@ -98,7 +105,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
       _elapsedSeconds = 0;
       _downFrames = 0;
       _upFrames = 0;
-      _stage = 'up';
+      _stage = _isSitUp ? 'down' : 'up';
       _lastRepAt = null;
       _error = null;
     });
@@ -141,25 +148,30 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
       );
       final poses = await _poseDetector.processImage(input);
       if (!_running || !mounted || poses.isEmpty) return;
-      final angle = _elbowAngle(poses.first);
+      final angle = _exerciseAngle(poses.first);
       if (angle == null) return;
       _currentAngle = angle;
 
-      if (angle < 95) {
+      final isSitUp = _isSitUp;
+      final reachedLowPosition = isSitUp ? angle < 90 : angle < 100;
+      final reachedHighPosition = isSitUp ? angle > 145 : angle > 155;
+
+      if (reachedLowPosition) {
         _downFrames++;
         _upFrames = 0;
-        if (_downFrames >= 2) _stage = 'down';
-      } else if (angle > 155) {
+        if (_downFrames >= 2) _stage = isSitUp ? 'up' : 'down';
+      } else if (reachedHighPosition) {
         _upFrames++;
         _downFrames = 0;
-        if (_upFrames >= 2 && _stage == 'down') {
+        final completedCycle = isSitUp ? _stage == 'up' : _stage == 'down';
+        if (_upFrames >= 2 && completedCycle) {
           final now = DateTime.now();
           final last = _lastRepAt;
           if (last == null || now.difference(last).inMilliseconds >= 500) {
             _reps++;
             _lastRepAt = now;
           }
-          _stage = 'up';
+          _stage = isSitUp ? 'down' : 'up';
         }
       } else {
         _downFrames = 0;
@@ -175,22 +187,34 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
     }
   }
 
-  double? _elbowAngle(Pose pose) {
-    double? sideAngle(PoseLandmarkType shoulderType, PoseLandmarkType elbowType, PoseLandmarkType wristType) {
-      final shoulder = pose.landmarks[shoulderType];
-      final elbow = pose.landmarks[elbowType];
-      final wrist = pose.landmarks[wristType];
-      if (shoulder == null || elbow == null || wrist == null) return null;
-      if (shoulder.likelihood < 0.45 || elbow.likelihood < 0.45 || wrist.likelihood < 0.45) return null;
-      final radians = math.atan2(wrist.y - elbow.y, wrist.x - elbow.x) -
-          math.atan2(shoulder.y - elbow.y, shoulder.x - elbow.x);
+  double? _exerciseAngle(Pose pose) {
+    double? sideAngle(
+      PoseLandmarkType firstType,
+      PoseLandmarkType jointType,
+      PoseLandmarkType lastType,
+    ) {
+      final first = pose.landmarks[firstType];
+      final joint = pose.landmarks[jointType];
+      final last = pose.landmarks[lastType];
+      if (first == null || joint == null || last == null) return null;
+      if (first.likelihood < 0.45 || joint.likelihood < 0.45 || last.likelihood < 0.45) return null;
+      final radians = math.atan2(last.y - joint.y, last.x - joint.x) -
+          math.atan2(first.y - joint.y, first.x - joint.x);
       var degrees = radians.abs() * 180 / math.pi;
       if (degrees > 180) degrees = 360 - degrees;
       return degrees;
     }
 
-    final left = sideAngle(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftElbow, PoseLandmarkType.leftWrist);
-    final right = sideAngle(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightElbow, PoseLandmarkType.rightWrist);
+    final left = _isSitUp
+        ? sideAngle(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee)
+        : widget.exerciseName.toLowerCase() == 'squat'
+            ? sideAngle(PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee, PoseLandmarkType.leftAnkle)
+            : sideAngle(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftElbow, PoseLandmarkType.leftWrist);
+    final right = _isSitUp
+        ? sideAngle(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee)
+        : widget.exerciseName.toLowerCase() == 'squat'
+            ? sideAngle(PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle)
+            : sideAngle(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightElbow, PoseLandmarkType.rightWrist);
     if (left == null) return right;
     if (right == null) return left;
     return left < right ? left : right;
@@ -239,7 +263,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
       final rate = minutes <= 0 ? 0.0 : _reps / minutes;
       await WorkoutService.instance.addWorkout(Workout(
         id: '',
-        name: 'AI Push-up (Live)',
+        name: 'AI ${widget.exerciseName} (Live)',
         category: 'Strength',
         duration: _elapsedSeconds,
         durationUnit: 'seconds',
@@ -283,7 +307,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
-        title: const Text('Live Rep Counter', style: TextStyle(color: _ink, fontWeight: FontWeight.w700)),
+        title: Text('Live ${widget.exerciseName} Counter', style: const TextStyle(color: _ink, fontWeight: FontWeight.w700)),
         backgroundColor: _bg,
         iconTheme: const IconThemeData(color: _ink),
       ),
@@ -297,11 +321,11 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: _border)),
                     child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('LIVE PUSH-UP TRACKING', style: TextStyle(color: _lime, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 1.1)),
+                      Text('LIVE ${widget.exerciseName.toUpperCase()} TRACKING', style: TextStyle(color: _lime, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 1.1)),
                       SizedBox(height: 6),
-                      Text('Place your phone at your side and keep your shoulders, elbows and wrists visible.', style: TextStyle(color: _ink, fontSize: 13)),
+                      Text(_isSitUp ? 'Place your phone at your side and keep your shoulders, hips and knees visible.' : widget.exerciseName.toLowerCase() == 'squat' ? 'Place your phone at your side and keep your hips, knees and ankles visible.' : 'Place your phone at your side and keep your shoulders, elbows and wrists visible.', style: TextStyle(color: _ink, fontSize: 13)),
                       SizedBox(height: 4),
-                      Text('The counter increases after a down-and-up movement is detected.', style: TextStyle(color: _muted, fontSize: 11)),
+                      Text(_isSitUp ? 'Start lying down, sit up, then return to the lying position to complete one repetition.' : 'The counter increases after a complete movement is detected.', style: TextStyle(color: _muted, fontSize: 11)),
                     ]),
                   ),
                   const SizedBox(height: 14),
@@ -338,7 +362,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
                       Icon(_running ? Icons.sensors_rounded : Icons.info_outline, color: _lime),
                       const SizedBox(width: 9),
                       Expanded(child: Text(
-                        !_running ? 'Ready to start' : _paused ? 'Paused — resume when ready' : _stage == 'down' ? 'Down position detected — push back up' : 'Ready position — lower your body',
+                        !_running ? 'Ready to start' : _paused ? 'Paused — resume when ready' : _isSitUp ? (_stage == 'up' ? 'Upright position — lie back down' : 'Lying position — sit up') : (_stage == 'down' ? 'Lower position detected — return to start' : 'Ready position — lower your body'),
                         style: const TextStyle(color: _ink, fontSize: 12, fontWeight: FontWeight.w600),
                       )),
                       if (_running) const SizedBox(width: 8),
