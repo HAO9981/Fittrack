@@ -56,7 +56,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     super.dispose();
   }
 
-  Future<void> _openAiTracking() async {
+  Future<void> _openAiTracking(String exerciseName) async {
     final method = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: const Color(0xFF141B17),
@@ -82,7 +82,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'AI Push-up Tracking',
+                'AI $exerciseName Tracking',
                 style: TextStyle(
                   color: _ink,
                   fontSize: 20,
@@ -91,7 +91,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Choose how you want to count your push-ups.',
+                'Choose how you want to count your ${exerciseName.toLowerCase()} reps.',
                 style: TextStyle(color: _muted, fontSize: 12),
               ),
               const SizedBox(height: 18),
@@ -137,8 +137,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
     if (!mounted || method == null) return;
     final screen = method == 'record'
-        ? const PushUpLiveCounterScreen()
-        : const PushUpVideoAnalysisScreen();
+        ? PushUpLiveCounterScreen(exerciseName: exerciseName)
+        : PushUpVideoAnalysisScreen(exerciseName: exerciseName);
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => screen),
     );
@@ -451,7 +451,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 ...workoutExercisePresets.map((item) => _ExerciseCard(
                   item: item,
                   onAdd: () => _add(preset: item),
-                  onAiTrack: item.name == 'Push Up' ? () => _openAiTracking() : null,
+                  onAiTrack: const {'Push Up', 'Squat', 'Sit-up'}.contains(item.name)
+                      ? () => _openAiTracking(item.name)
+                      : null,
                 )),
               ] else ...[
                 Row(children: [
@@ -863,6 +865,16 @@ const workoutExercisePresets = [
     image: 'assets/images/workouts/squat.jpg',
     sets: 4,
     reps: 12,
+    duration: 30,
+  ),
+  WorkoutExercisePreset(
+    name: 'Sit-up',
+    category: 'Strength',
+    detail: '3 sets · 15 reps',
+    icon: Icons.accessibility_new_rounded,
+    image: '',
+    sets: 3,
+    reps: 15,
     duration: 30,
   ),
   WorkoutExercisePreset(
