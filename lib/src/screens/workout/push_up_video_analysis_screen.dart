@@ -241,12 +241,12 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
 
   String get _performanceSummary {
     if (_reps == 0) {
-      return 'No complete repetitions were detected. Try a side-on camera angle and keep your upper body visible throughout the video.';
+      return 'No complete ${widget.exerciseName.toLowerCase()} repetitions were detected. Try a side-on camera angle and keep the required body joints visible throughout the video.';
     }
     final rate = _repsPerMinute;
-    if (rate >= 20) return 'Strong pace detected. Keep your movement controlled and maintain a consistent range of motion.';
-    if (rate >= 10) return 'Steady pace detected. Focus on keeping each repetition smooth and consistent.';
-    return 'A measured pace was detected. Take your time and prioritize controlled movement over speed.';
+    if (rate >= 20) return 'Strong pace detected. Keep your ${widget.exerciseName.toLowerCase()} movement controlled and maintain a consistent range of motion.';
+    if (rate >= 10) return 'Steady pace detected. Focus on keeping each ${widget.exerciseName.toLowerCase()} repetition smooth and consistent.';
+    return 'A measured pace was detected. Take your time and prioritize controlled ${widget.exerciseName.toLowerCase()} movements over speed.';
   }
 
   Future<void> _saveWorkout() async {
