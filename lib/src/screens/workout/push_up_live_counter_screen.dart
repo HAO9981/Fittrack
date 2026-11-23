@@ -320,7 +320,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: _border)),
-                    child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text('LIVE ${widget.exerciseName.toUpperCase()} TRACKING', style: TextStyle(color: _lime, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 1.1)),
                       SizedBox(height: 6),
                       Text(_isSitUp ? 'Place your phone at your side and keep your shoulders, hips and knees visible.' : widget.exerciseName.toLowerCase() == 'squat' ? 'Place your phone at your side and keep your hips, knees and ankles visible.' : 'Place your phone at your side and keep your shoulders, elbows and wrists visible.', style: TextStyle(color: _ink, fontSize: 13)),
@@ -350,7 +350,7 @@ class _PushUpLiveCounterScreenState extends State<PushUpLiveCounterScreen> {
                     Expanded(child: _LiveMetric(label: 'TIME', value: _timeLabel)),
                     const SizedBox(width: 8),
                     Expanded(child: _LiveMetric(
-                      label: 'ELBOW',
+                      label: 'ANGLE',
                       value: _currentAngle == null ? '--' : '${_currentAngle!.round()}°',
                     )),
                   ]),
