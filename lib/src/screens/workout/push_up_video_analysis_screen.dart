@@ -17,9 +17,14 @@ const _surface = Color(0xFF141B17);
 const _border = Color(0xFF27332B);
 
 class PushUpVideoAnalysisScreen extends StatefulWidget {
-  const PushUpVideoAnalysisScreen({super.key, this.initialVideoPath});
+  const PushUpVideoAnalysisScreen({
+    super.key,
+    this.initialVideoPath,
+    this.exerciseName = 'Push Up',
+  });
 
   final String? initialVideoPath;
+  final String exerciseName;
 
   @override
   State<PushUpVideoAnalysisScreen> createState() => _PushUpVideoAnalysisScreenState();
@@ -42,6 +47,8 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
   final List<int> _repTimesMs = [];
   bool _hasAnalyzed = false;
   String _stage = 'up';
+
+  bool get _isSitUp => widget.exerciseName.toLowerCase() == 'sit-up';
 
   @override
   void initState() {
@@ -74,7 +81,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
         _reps = 0;
         _processedFrames = 0;
         _totalFrames = 0;
-        _stage = 'up';
+        _stage = _isSitUp ? 'down' : 'up';
         _downSamples = 0;
         _upSamples = 0;
         _repTimesMs.clear();
@@ -97,21 +104,34 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
   }
 
   double? _calculateAngle(Pose pose) {
-    double? angleFor(PoseLandmarkType shoulderType, PoseLandmarkType elbowType, PoseLandmarkType wristType) {
-      final shoulder = pose.landmarks[shoulderType];
-      final elbow = pose.landmarks[elbowType];
-      final wrist = pose.landmarks[wristType];
-      if (shoulder == null || elbow == null || wrist == null) return null;
-      if (shoulder.likelihood < 0.45 || elbow.likelihood < 0.45 || wrist.likelihood < 0.45) return null;
-      final radians = math.atan2(wrist.y - elbow.y, wrist.x - elbow.x) -
-          math.atan2(shoulder.y - elbow.y, shoulder.x - elbow.x);
+    double? angleFor(
+      PoseLandmarkType firstType,
+      PoseLandmarkType jointType,
+      PoseLandmarkType lastType,
+    ) {
+      final first = pose.landmarks[firstType];
+      final joint = pose.landmarks[jointType];
+      final last = pose.landmarks[lastType];
+      if (first == null || joint == null || last == null) return null;
+      if (first.likelihood < 0.45 || joint.likelihood < 0.45 || last.likelihood < 0.45) return null;
+      final radians = math.atan2(last.y - joint.y, last.x - joint.x) -
+          math.atan2(first.y - joint.y, first.x - joint.x);
       var degrees = radians.abs() * 180 / math.pi;
       if (degrees > 180) degrees = 360 - degrees;
       return degrees;
     }
 
-    final left = angleFor(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftElbow, PoseLandmarkType.leftWrist);
-    final right = angleFor(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightElbow, PoseLandmarkType.rightWrist);
+    final isSquat = widget.exerciseName.toLowerCase() == 'squat';
+    final left = _isSitUp
+        ? angleFor(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee)
+        : isSquat
+            ? angleFor(PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee, PoseLandmarkType.leftAnkle)
+            : angleFor(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftElbow, PoseLandmarkType.leftWrist);
+    final right = _isSitUp
+        ? angleFor(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee)
+        : isSquat
+            ? angleFor(PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle)
+            : angleFor(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightElbow, PoseLandmarkType.rightWrist);
     if (left == null) return right;
     if (right == null) return left;
     return (left + right) / 2;
@@ -165,17 +185,21 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
               if (angle != null) {
                 // Require two consecutive samples at each end of the movement
                 // to reduce false counts caused by a single noisy pose frame.
-                if (angle < 100) {
+                final isSitUp = _isSitUp;
+                final reachedLowPosition = isSitUp ? angle < 90 : angle < 100;
+                final reachedHighPosition = isSitUp ? angle > 145 : angle > 155;
+                if (reachedLowPosition) {
                   _downSamples++;
                   _upSamples = 0;
-                  if (_downSamples >= 2) _stage = 'down';
-                } else if (angle > 155) {
+                  if (_downSamples >= 2) _stage = isSitUp ? 'up' : 'down';
+                } else if (reachedHighPosition) {
                   _upSamples++;
                   _downSamples = 0;
-                  if (_upSamples >= 2 && _stage == 'down') {
+                  final completedCycle = isSitUp ? _stage == 'up' : _stage == 'down';
+                  if (_upSamples >= 2 && completedCycle) {
                     _reps++;
                     _repTimesMs.add(timeMs);
-                    _stage = 'up';
+                    _stage = isSitUp ? 'down' : 'up';
                   }
                 } else {
                   _downSamples = 0;
@@ -231,7 +255,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
     try {
       await WorkoutService.instance.addWorkout(Workout(
         id: '',
-        name: 'AI Push-up (Video)',
+        name: 'AI ${widget.exerciseName} (Video)',
         category: 'Strength',
         duration: _durationSeconds,
         durationUnit: 'seconds',
@@ -242,7 +266,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
       ));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saved $_reps push-ups to Workout History.')),
+        SnackBar(content: Text('Saved $_reps ${widget.exerciseName.toLowerCase()} reps to Workout History.')),
       );
       Navigator.of(context).pop();
     } catch (error) {
@@ -270,7 +294,7 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF080D0B),
       appBar: AppBar(
-        title: const Text('AI Video Analysis', style: TextStyle(color: _ink, fontWeight: FontWeight.w700)),
+        title: Text('AI ${widget.exerciseName} Analysis', style: const TextStyle(color: _ink, fontWeight: FontWeight.w700)),
         backgroundColor: const Color(0xFF080D0B),
         iconTheme: const IconThemeData(color: _ink),
       ),
@@ -282,11 +306,11 @@ class _PushUpVideoAnalysisScreenState extends State<PushUpVideoAnalysisScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: _border)),
               child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('PUSH-UP ANALYSIS', style: TextStyle(color: _lime, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                Text('${widget.exerciseName.toUpperCase()} ANALYSIS', style: TextStyle(color: _lime, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
                 SizedBox(height: 6),
-                Text('Upload a video and let FitTrack count your reps.', style: TextStyle(color: _ink, fontSize: 15, fontWeight: FontWeight.w600)),
+                Text('Upload a video and let FitTrack count your ${widget.exerciseName.toLowerCase()} reps.', style: TextStyle(color: _ink, fontSize: 15, fontWeight: FontWeight.w600)),
                 SizedBox(height: 5),
-                Text('For better results, record from the side with your shoulders, elbows and wrists visible.', style: TextStyle(color: _muted, fontSize: 12)),
+                Text(_isSitUp ? 'For better results, record from the side with your shoulders, hips and knees visible.' : widget.exerciseName.toLowerCase() == 'squat' ? 'For better results, record from the side with your hips, knees and ankles visible.' : 'For better results, record from the side with your shoulders, elbows and wrists visible.', style: TextStyle(color: _muted, fontSize: 12)),
               ]),
             ),
             const SizedBox(height: 14),
